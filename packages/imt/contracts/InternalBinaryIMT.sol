@@ -35,7 +35,7 @@ library InternalBinaryIMT {
         BinaryIMTData storage self,
         uint256 depth,
         uint256 zero,
-        function(uint256[2] memory) pure returns (uint256) _hash
+        function(uint256[2] memory) pure returns (uint256) hasher
     ) internal {
         if (zero >= SNARK_SCALAR_FIELD) {
             revert ValueGreaterThanSnarkScalarField();
@@ -47,7 +47,7 @@ library InternalBinaryIMT {
 
         for (uint8 i = 0; i < depth; ) {
             self.zeroes[i] = zero;
-            zero = _hash([zero, zero]);
+            zero = hasher([zero, zero]);
 
             unchecked {
                 ++i;
@@ -78,7 +78,7 @@ library InternalBinaryIMT {
     function _insert(
         BinaryIMTData storage self,
         uint256 leaf,
-        function(uint256[2] memory) pure returns (uint256) _hash,
+        function(uint256[2] memory) pure returns (uint256) hasher,
         function(uint256) pure returns (uint256) _defaultZero
     ) internal returns (uint256) {
         uint256 depth = self.depth;
@@ -100,7 +100,7 @@ library InternalBinaryIMT {
                 self.lastSubtrees[i][1] = hash;
             }
 
-            hash = _hash(self.lastSubtrees[i]);
+            hash = hasher(self.lastSubtrees[i]);
             index >>= 1;
 
             unchecked {
@@ -125,13 +125,13 @@ library InternalBinaryIMT {
         uint256 newLeaf,
         uint256[] calldata proofSiblings,
         uint8[] calldata proofPathIndices,
-        function(uint256[2] memory) pure returns (uint256) _hash
+        function(uint256[2] memory) pure returns (uint256) hasher
     ) internal {
         if (newLeaf == leaf) {
             revert NewLeafCannotEqualOldLeaf();
         } else if (newLeaf >= SNARK_SCALAR_FIELD) {
             revert ValueGreaterThanSnarkScalarField();
-        } else if (!_verify(self, leaf, proofSiblings, proofPathIndices, _hash)) {
+        } else if (!_verify(self, leaf, proofSiblings, proofPathIndices, hasher)) {
             revert LeafDoesNotExist();
         }
 
@@ -147,13 +147,13 @@ library InternalBinaryIMT {
                     self.lastSubtrees[i][0] = hash;
                 }
 
-                hash = _hash([hash, proofSiblings[i]]);
+                hash = hasher([hash, proofSiblings[i]]);
             } else {
                 if (proofSiblings[i] == self.lastSubtrees[i][0]) {
                     self.lastSubtrees[i][1] = hash;
                 }
 
-                hash = _hash([proofSiblings[i], hash]);
+                hash = hasher([proofSiblings[i], hash]);
             }
 
             unchecked {
@@ -178,10 +178,10 @@ library InternalBinaryIMT {
         uint256 leaf,
         uint256[] calldata proofSiblings,
         uint8[] calldata proofPathIndices,
-        function(uint256[2] memory) pure returns (uint256) _hash,
+        function(uint256[2] memory) pure returns (uint256) hasher,
         uint256 Z_0
     ) internal {
-        _update(self, leaf, self.useDefaultZeroes ? Z_0 : self.zeroes[0], proofSiblings, proofPathIndices, _hash);
+        _update(self, leaf, self.useDefaultZeroes ? Z_0 : self.zeroes[0], proofSiblings, proofPathIndices, hasher);
     }
 
     /// @dev Verify if the path is correct and the leaf is part of the tree.
@@ -195,7 +195,7 @@ library InternalBinaryIMT {
         uint256 leaf,
         uint256[] calldata proofSiblings,
         uint8[] calldata proofPathIndices,
-        function(uint256[2] memory) pure returns (uint256) _hash
+        function(uint256[2] memory) pure returns (uint256) hasher
     ) internal view returns (bool) {
         uint256 depth = self.depth;
 
@@ -215,9 +215,9 @@ library InternalBinaryIMT {
             }
 
             if (proofPathIndices[i] == 0) {
-                hash = _hash([hash, proofSiblings[i]]);
+                hash = hasher([hash, proofSiblings[i]]);
             } else {
-                hash = _hash([proofSiblings[i], hash]);
+                hash = hasher([proofSiblings[i], hash]);
             }
 
             unchecked {
