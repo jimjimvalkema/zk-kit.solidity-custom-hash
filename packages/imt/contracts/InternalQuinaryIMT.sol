@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import {PoseidonT6} from "poseidon-solidity/PoseidonT6.sol";
 import {SNARK_SCALAR_FIELD, MAX_DEPTH} from "./Constants.sol";
 
 // Each incremental tree has certain properties and data that will
@@ -31,7 +30,12 @@ library InternalQuinaryIMT {
     /// @param self: Tree data.
     /// @param depth: Depth of the tree.
     /// @param zero: Zero value to be used.
-    function _init(QuinaryIMTData storage self, uint256 depth, uint256 zero) internal {
+    function _init(
+        QuinaryIMTData storage self,
+        uint256 depth,
+        uint256 zero,
+        function(uint256[5] memory) pure returns (uint256) hasher
+    ) internal {
         if (zero >= SNARK_SCALAR_FIELD) {
             revert ValueGreaterThanSnarkScalarField();
         } else if (depth <= 0 || depth > MAX_DEPTH) {
@@ -51,7 +55,7 @@ library InternalQuinaryIMT {
                 }
             }
 
-            zero = PoseidonT6.hash(zeroChildren);
+            zero = hasher(zeroChildren);
 
             unchecked {
                 ++i;
@@ -64,7 +68,11 @@ library InternalQuinaryIMT {
     /// @dev Inserts a leaf in the tree.
     /// @param self: Tree data.
     /// @param leaf: Leaf to be inserted.
-    function _insert(QuinaryIMTData storage self, uint256 leaf) internal {
+    function _insert(
+        QuinaryIMTData storage self,
+        uint256 leaf,
+        function(uint256[5] memory) pure returns (uint256) hasher
+    ) internal {
         uint256 depth = self.depth;
 
         if (leaf >= SNARK_SCALAR_FIELD) {
@@ -90,7 +98,7 @@ library InternalQuinaryIMT {
                 }
             }
 
-            hash = PoseidonT6.hash(self.lastSubtrees[i]);
+            hash = hasher(self.lastSubtrees[i]);
             index /= 5;
 
             unchecked {
@@ -113,13 +121,14 @@ library InternalQuinaryIMT {
         uint256 leaf,
         uint256 newLeaf,
         uint256[4][] calldata proofSiblings,
-        uint8[] calldata proofPathIndices
+        uint8[] calldata proofPathIndices,
+        function(uint256[5] memory) pure returns (uint256) hasher
     ) internal {
         if (newLeaf == leaf) {
             revert NewLeafCannotEqualOldLeaf();
         } else if (newLeaf >= SNARK_SCALAR_FIELD) {
             revert ValueGreaterThanSnarkScalarField();
-        } else if (!_verify(self, leaf, proofSiblings, proofPathIndices)) {
+        } else if (!_verify(self, leaf, proofSiblings, proofPathIndices, hasher)) {
             revert LeafDoesNotExist();
         }
 
@@ -148,7 +157,7 @@ library InternalQuinaryIMT {
                 self.lastSubtrees[i][proofPathIndices[i]] = hash;
             }
 
-            hash = PoseidonT6.hash(nodes);
+            hash = hasher(nodes);
 
             unchecked {
                 ++i;
@@ -171,9 +180,10 @@ library InternalQuinaryIMT {
         QuinaryIMTData storage self,
         uint256 leaf,
         uint256[4][] calldata proofSiblings,
-        uint8[] calldata proofPathIndices
+        uint8[] calldata proofPathIndices,
+        function(uint256[5] memory) pure returns (uint256) hasher
     ) internal {
-        _update(self, leaf, self.zeroes[0], proofSiblings, proofPathIndices);
+        _update(self, leaf, self.zeroes[0], proofSiblings, proofPathIndices, hasher);
     }
 
     /// @dev Verify if the path is correct and the leaf is part of the tree.
@@ -186,7 +196,8 @@ library InternalQuinaryIMT {
         QuinaryIMTData storage self,
         uint256 leaf,
         uint256[4][] calldata proofSiblings,
-        uint8[] calldata proofPathIndices
+        uint8[] calldata proofPathIndices,
+        function(uint256[5] memory) pure returns (uint256) hasher
     ) internal view returns (bool) {
         uint256 depth = self.depth;
 
@@ -229,7 +240,7 @@ library InternalQuinaryIMT {
                 }
             }
 
-            hash = PoseidonT6.hash(nodes);
+            hash = hasher(nodes);
 
             unchecked {
                 ++i;
