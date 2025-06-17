@@ -80,7 +80,7 @@ library BinaryIMT {
         revert WrongDefaultZeroIndex();
     }
 
-    function _hash(uint256[2] memory inputs) internal pure returns (uint256) {
+    function hasher(uint256[2] memory inputs) internal pure returns (uint256) {
         return PoseidonT3.hash(inputs);
     }
 
@@ -89,7 +89,7 @@ library BinaryIMT {
     }
 
     function init(BinaryIMTData storage self, uint256 depth, uint256 zero) public {
-        InternalBinaryIMT._init(self, depth, zero, _hash);
+        InternalBinaryIMT._init(self, depth, zero, hasher);
     }
 
     function initWithDefaultZeroes(BinaryIMTData storage self, uint256 depth) public {
@@ -97,7 +97,7 @@ library BinaryIMT {
     }
 
     function insert(BinaryIMTData storage self, uint256 leaf) public returns (uint256) {
-        return InternalBinaryIMT._insert(self, leaf, _hash, _defaultZero);
+        return InternalBinaryIMT._insert(self, leaf, hasher, _defaultZero);
     }
 
     function update(
@@ -107,7 +107,7 @@ library BinaryIMT {
         uint256[] calldata proofSiblings,
         uint8[] calldata proofPathIndices
     ) public {
-        InternalBinaryIMT._update(self, leaf, newLeaf, proofSiblings, proofPathIndices, _hash);
+        InternalBinaryIMT._update(self, leaf, newLeaf, proofSiblings, proofPathIndices, hasher);
     }
 
     function remove(
@@ -116,6 +116,6 @@ library BinaryIMT {
         uint256[] calldata proofSiblings,
         uint8[] calldata proofPathIndices
     ) public {
-        InternalBinaryIMT._remove(self, leaf, proofSiblings, proofPathIndices, _hash, Z_0);
+        InternalBinaryIMT._remove(self, leaf, proofSiblings, proofPathIndices, hasher, Z_0);
     }
 }
