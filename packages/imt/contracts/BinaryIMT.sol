@@ -3,7 +3,9 @@ pragma solidity ^0.8.4;
 
 import {InternalBinaryIMT, BinaryIMTData} from "./InternalBinaryIMT.sol";
 import {PoseidonT3} from "poseidon-solidity/PoseidonT3.sol";
+import {SNARK_SCALAR_FIELD} from "./Constants.sol";
 
+error ValueGreaterThanSnarkScalarField();
 error WrongDefaultZeroIndex();
 
 library BinaryIMT {
@@ -81,6 +83,13 @@ library BinaryIMT {
     }
 
     function hasher(uint256[2] memory inputs) internal pure returns (uint256) {
+        if (inputs[0] >= SNARK_SCALAR_FIELD || inputs[1] >= SNARK_SCALAR_FIELD) {
+            revert ValueGreaterThanSnarkScalarField();
+        }
+        return PoseidonT3.hash(inputs);
+    }
+
+    function hasherUnsafe(uint256[2] memory inputs) internal pure returns (uint256) {
         return PoseidonT3.hash(inputs);
     }
 
@@ -89,7 +98,10 @@ library BinaryIMT {
     }
 
     function init(BinaryIMTData storage self, uint256 depth, uint256 zero) public {
-        InternalBinaryIMT._init(self, depth, zero, hasher);
+        if (zero >= SNARK_SCALAR_FIELD) {
+            revert ValueGreaterThanSnarkScalarField();
+        }
+        InternalBinaryIMT._init(self, depth, zero, hasherUnsafe);
     }
 
     function initWithDefaultZeroes(BinaryIMTData storage self, uint256 depth) public {
@@ -97,7 +109,10 @@ library BinaryIMT {
     }
 
     function insert(BinaryIMTData storage self, uint256 leaf) public returns (uint256) {
-        return InternalBinaryIMT._insert(self, leaf, hasher, _defaultZero);
+        if (leaf >= SNARK_SCALAR_FIELD) {
+            revert ValueGreaterThanSnarkScalarField();
+        }
+        return InternalBinaryIMT._insert(self, leaf, hasherUnsafe, _defaultZero);
     }
 
     function update(
@@ -107,6 +122,9 @@ library BinaryIMT {
         uint256[] calldata proofSiblings,
         uint8[] calldata proofPathIndices
     ) public {
+        if (leaf >= SNARK_SCALAR_FIELD || newLeaf >= SNARK_SCALAR_FIELD) {
+            revert ValueGreaterThanSnarkScalarField();
+        }
         InternalBinaryIMT._update(self, leaf, newLeaf, proofSiblings, proofPathIndices, hasher);
     }
 
@@ -116,6 +134,9 @@ library BinaryIMT {
         uint256[] calldata proofSiblings,
         uint8[] calldata proofPathIndices
     ) public {
+        if (leaf >= SNARK_SCALAR_FIELD) {
+            revert ValueGreaterThanSnarkScalarField();
+        }
         InternalBinaryIMT._remove(self, leaf, proofSiblings, proofPathIndices, hasher, Z_0);
     }
 }

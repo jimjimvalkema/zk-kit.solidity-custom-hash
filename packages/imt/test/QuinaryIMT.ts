@@ -189,6 +189,7 @@ describe("QuinaryIMT", () => {
 
             const transaction = quinaryIMTTest.update(0, leaf, siblings, pathIndices)
 
+            // TODO this guy sometimes gets LeafDoesNotExist instead of LeafIndexOutOfRange and the test fails
             await expect(transaction).to.be.revertedWithCustomError(quinaryIMT, "LeafIndexOutOfRange")
         })
     })

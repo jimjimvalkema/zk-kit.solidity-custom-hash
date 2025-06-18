@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import {SNARK_SCALAR_FIELD, MAX_DEPTH} from "./Constants.sol";
+import {MAX_DEPTH} from "./Constants.sol";
 
 // Each incremental tree has certain properties and data that will
 // be used to add new leaves.
@@ -15,7 +15,6 @@ struct BinaryIMTData {
     bool useDefaultZeroes;
 }
 
-error ValueGreaterThanSnarkScalarField();
 error DepthNotSupported();
 error TreeIsFull();
 error NewLeafCannotEqualOldLeaf();
@@ -37,9 +36,7 @@ library InternalBinaryIMT {
         uint256 zero,
         function(uint256[2] memory) pure returns (uint256) hasher
     ) internal {
-        if (zero >= SNARK_SCALAR_FIELD) {
-            revert ValueGreaterThanSnarkScalarField();
-        } else if (depth <= 0 || depth > MAX_DEPTH) {
+        if (depth <= 0 || depth > MAX_DEPTH) {
             revert DepthNotSupported();
         }
 
@@ -83,9 +80,7 @@ library InternalBinaryIMT {
     ) internal returns (uint256) {
         uint256 depth = self.depth;
 
-        if (leaf >= SNARK_SCALAR_FIELD) {
-            revert ValueGreaterThanSnarkScalarField();
-        } else if (self.numberOfLeaves >= 2 ** depth) {
+        if (self.numberOfLeaves >= 2 ** depth) {
             revert TreeIsFull();
         }
 
@@ -129,8 +124,6 @@ library InternalBinaryIMT {
     ) internal {
         if (newLeaf == leaf) {
             revert NewLeafCannotEqualOldLeaf();
-        } else if (newLeaf >= SNARK_SCALAR_FIELD) {
-            revert ValueGreaterThanSnarkScalarField();
         } else if (!_verify(self, leaf, proofSiblings, proofPathIndices, hasher)) {
             revert LeafDoesNotExist();
         }
@@ -199,18 +192,14 @@ library InternalBinaryIMT {
     ) internal view returns (bool) {
         uint256 depth = self.depth;
 
-        if (leaf >= SNARK_SCALAR_FIELD) {
-            revert ValueGreaterThanSnarkScalarField();
-        } else if (proofPathIndices.length != depth || proofSiblings.length != depth) {
+        if (proofPathIndices.length != depth || proofSiblings.length != depth) {
             revert WrongMerkleProofPath();
         }
 
         uint256 hash = leaf;
 
         for (uint8 i = 0; i < depth; ) {
-            if (proofSiblings[i] >= SNARK_SCALAR_FIELD) {
-                revert ValueGreaterThanSnarkScalarField();
-            } else if (proofPathIndices[i] != 1 && proofPathIndices[i] != 0) {
+            if (proofPathIndices[i] != 1 && proofPathIndices[i] != 0) {
                 revert WrongMerkleProofPath();
             }
 

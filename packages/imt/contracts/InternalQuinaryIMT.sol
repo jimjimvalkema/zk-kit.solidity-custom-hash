@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import {SNARK_SCALAR_FIELD, MAX_DEPTH} from "./Constants.sol";
+import {MAX_DEPTH} from "./Constants.sol";
 
 // Each incremental tree has certain properties and data that will
 // be used to add new leaves.
@@ -14,7 +14,6 @@ struct QuinaryIMTData {
     mapping(uint256 => uint256[5]) lastSubtrees; // Caching these values is essential to efficient appends.
 }
 
-error ValueGreaterThanSnarkScalarField();
 error DepthNotSupported();
 error TreeIsFull();
 error NewLeafCannotEqualOldLeaf();
@@ -36,9 +35,7 @@ library InternalQuinaryIMT {
         uint256 zero,
         function(uint256[5] memory) pure returns (uint256) hasher
     ) internal {
-        if (zero >= SNARK_SCALAR_FIELD) {
-            revert ValueGreaterThanSnarkScalarField();
-        } else if (depth <= 0 || depth > MAX_DEPTH) {
+        if (depth <= 0 || depth > MAX_DEPTH) {
             revert DepthNotSupported();
         }
 
@@ -75,9 +72,7 @@ library InternalQuinaryIMT {
     ) internal {
         uint256 depth = self.depth;
 
-        if (leaf >= SNARK_SCALAR_FIELD) {
-            revert ValueGreaterThanSnarkScalarField();
-        } else if (self.numberOfLeaves >= 5 ** depth) {
+        if (self.numberOfLeaves >= 5 ** depth) {
             revert TreeIsFull();
         }
 
@@ -126,8 +121,6 @@ library InternalQuinaryIMT {
     ) internal {
         if (newLeaf == leaf) {
             revert NewLeafCannotEqualOldLeaf();
-        } else if (newLeaf >= SNARK_SCALAR_FIELD) {
-            revert ValueGreaterThanSnarkScalarField();
         } else if (!_verify(self, leaf, proofSiblings, proofPathIndices, hasher)) {
             revert LeafDoesNotExist();
         }
@@ -201,9 +194,7 @@ library InternalQuinaryIMT {
     ) internal view returns (bool) {
         uint256 depth = self.depth;
 
-        if (leaf >= SNARK_SCALAR_FIELD) {
-            revert ValueGreaterThanSnarkScalarField();
-        } else if (proofPathIndices.length != depth || proofSiblings.length != depth) {
+        if (proofPathIndices.length != depth || proofSiblings.length != depth) {
             revert WrongMerkleProofPath();
         }
 
@@ -218,19 +209,19 @@ library InternalQuinaryIMT {
 
             for (uint8 j = 0; j < 5; ) {
                 if (j < proofPathIndices[i]) {
-                    require(
-                        proofSiblings[i][j] < SNARK_SCALAR_FIELD,
-                        "QuinaryIMT: sibling node must be < SNARK_SCALAR_FIELD"
-                    );
+                    // require(
+                    //     proofSiblings[i][j] < SNARK_SCALAR_FIELD,
+                    //     "QuinaryIMT: sibling node must be < SNARK_SCALAR_FIELD"
+                    // );
 
                     nodes[j] = proofSiblings[i][j];
                 } else if (j == proofPathIndices[i]) {
                     nodes[j] = hash;
                 } else {
-                    require(
-                        proofSiblings[i][j - 1] < SNARK_SCALAR_FIELD,
-                        "QuinaryIMT: sibling node must be < SNARK_SCALAR_FIELD"
-                    );
+                    // require(
+                    //     proofSiblings[i][j - 1] < SNARK_SCALAR_FIELD,
+                    //     "QuinaryIMT: sibling node must be < SNARK_SCALAR_FIELD"
+                    // );
 
                     nodes[j] = proofSiblings[i][j - 1];
                 }
