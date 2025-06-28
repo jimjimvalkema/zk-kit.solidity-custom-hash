@@ -34,7 +34,7 @@ library InternalBinaryIMT {
         BinaryIMTData storage self,
         uint256 depth,
         uint256 zero,
-        function(uint256[2] memory) pure returns (uint256) hasher
+        function(uint256[2] memory) view returns (uint256) hasher
     ) internal {
         if (depth <= 0 || depth > MAX_DEPTH) {
             revert DepthNotSupported();
@@ -75,7 +75,7 @@ library InternalBinaryIMT {
     function _insert(
         BinaryIMTData storage self,
         uint256 leaf,
-        function(uint256[2] memory) pure returns (uint256) hasher,
+        function(uint256[2] memory) view returns (uint256) hasher,
         function(uint256) pure returns (uint256) _defaultZero
     ) internal returns (uint256) {
         uint256 depth = self.depth;
@@ -120,7 +120,7 @@ library InternalBinaryIMT {
         uint256 newLeaf,
         uint256[] calldata proofSiblings,
         uint8[] calldata proofPathIndices,
-        function(uint256[2] memory) pure returns (uint256) hasher
+        function(uint256[2] memory) view returns (uint256) hasher
     ) internal {
         if (newLeaf == leaf) {
             revert NewLeafCannotEqualOldLeaf();
@@ -171,7 +171,7 @@ library InternalBinaryIMT {
         uint256 leaf,
         uint256[] calldata proofSiblings,
         uint8[] calldata proofPathIndices,
-        function(uint256[2] memory) pure returns (uint256) hasher,
+        function(uint256[2] memory) view returns (uint256) hasher,
         uint256 Z_0
     ) internal {
         _update(self, leaf, self.useDefaultZeroes ? Z_0 : self.zeroes[0], proofSiblings, proofPathIndices, hasher);
@@ -188,7 +188,7 @@ library InternalBinaryIMT {
         uint256 leaf,
         uint256[] calldata proofSiblings,
         uint8[] calldata proofPathIndices,
-        function(uint256[2] memory) pure returns (uint256) hasher
+        function(uint256[2] memory) view returns (uint256) hasher
     ) internal view returns (bool) {
         uint256 depth = self.depth;
 
