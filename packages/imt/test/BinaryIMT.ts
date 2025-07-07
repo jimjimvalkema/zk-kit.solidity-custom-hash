@@ -4,6 +4,55 @@ import { run } from "hardhat"
 import { poseidon2 } from "poseidon-lite"
 import { BinaryIMT, BinaryIMTTest } from "../typechain-types"
 
+import poseidonSolidity from "poseidon-solidity"
+
+import { ethers } from "ethers"
+import { PoseidonT3__factory } from "../typechain-types"
+import hre from "hardhat"
+export async function deployPoseidon() {
+    //https://github.com/chancehudson/poseidon-solidity/tree/main?tab=readme-ov-file#deploy
+    //readme is wrong using ethers.provider instead of hre.ethers.provider
+    const provider = hre.ethers.provider
+
+    // common js imports struggles
+    const proxy = poseidonSolidity.proxy
+    const PoseidonT3 = poseidonSolidity.PoseidonT3
+
+    const [sender] = await hre.ethers.getSigners()
+    // First check if the proxy exists
+    if ((await provider.getCode(proxy.address)) === "0x") {
+        // fund the keyless account
+        await sender.sendTransaction({
+            to: proxy.from,
+            value: proxy.gas
+        })
+
+        //readme is wrong using provider.sendTransaction
+        // then send the presigned transaction deploying the proxy
+        await provider.broadcastTransaction(proxy.tx)
+    } else {
+    }
+
+    // Then deploy the hasher, if needed
+    if ((await provider.getCode(PoseidonT3.address)) === "0x") {
+        //readme is wrong having typo here: send.sendTransaction instead of sender
+        await sender.sendTransaction({
+            to: proxy.address,
+            data: PoseidonT3.data
+        })
+    } else {
+    }
+    const preImg = [1234n, 5678n] as ethers.BigNumberish[]
+    const jsHash = poseidon2(preImg)
+    const PoseidonT3Contract = PoseidonT3__factory.connect(PoseidonT3.address, provider)
+
+    //@ts-ignore
+    const solHash = await PoseidonT3Contract.hash(preImg)
+    //@ts-ignore
+    ethers.assert(jsHash === solHash, "whoop hash didn't match something is really wrong!!")
+    return PoseidonT3.address
+}
+
 describe("BinaryIMT", () => {
     const SNARK_SCALAR_FIELD = BigInt("21888242871839275222246405745257275088548364400416034343698204186575808495617")
     let binaryIMT: BinaryIMT
@@ -16,6 +65,9 @@ describe("BinaryIMT", () => {
         binaryIMT = library
         binaryIMTTest = contract
         jsBinaryIMT = new JSBinaryIMT(poseidon2, 6, 0, 2)
+
+        // the custom hash function assumes poseidon is deployed using the Nicks method
+        await deployPoseidon()
     })
 
     describe("# init", () => {
