@@ -3,16 +3,9 @@ pragma solidity ^0.8.4;
 
 import {InternalQuinaryIMT, QuinaryIMTData} from "./InternalQuinaryIMT.sol";
 import {SNARK_SCALAR_FIELD} from "./Constants.sol";
-import {PoseidonT6} from "poseidon-solidity/PoseidonT6.sol";
 
 library QuinaryIMT {
     using InternalQuinaryIMT for *;
-
-    // TODO remove this and change /tasks/deploy-imt-test.ts and also put poseidon nicks method in there
-    function removeMe() public {
-        PoseidonT6.hash([uint256(0), uint256(0), uint256(0), uint256(0), uint256(0)]);
-    }
-
     address internal constant hasher = 0x666333F371685334CdD69bdDdaFBABc87CE7c7Db;
 
     function init(QuinaryIMTData storage self, uint256 depth, uint256 zero) public {

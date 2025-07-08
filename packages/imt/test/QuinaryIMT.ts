@@ -10,50 +10,6 @@ import { ethers } from "ethers"
 import { PoseidonT6__factory } from "../typechain-types"
 import hre from "hardhat"
 
-export async function deployPoseidon() {
-    //https://github.com/chancehudson/poseidon-solidity/tree/main?tab=readme-ov-file#deploy
-    //readme is wrong using ethers.provider instead of hre.ethers.provider
-    const provider = hre.ethers.provider
-
-    // common js imports struggles
-    const proxy = poseidonSolidity.proxy
-    const PoseidonT6 = poseidonSolidity.PoseidonT6
-
-    const [sender] = await hre.ethers.getSigners()
-    // First check if the proxy exists
-    if ((await provider.getCode(proxy.address)) === "0x") {
-        // fund the keyless account
-        await sender.sendTransaction({
-            to: proxy.from,
-            value: proxy.gas
-        })
-
-        //readme is wrong using provider.sendTransaction
-        // then send the presigned transaction deploying the proxy
-        await provider.broadcastTransaction(proxy.tx)
-    } else {
-    }
-
-    // Then deploy the hasher, if needed
-    if ((await provider.getCode(PoseidonT6.address)) === "0x") {
-        //readme is wrong having typo here: send.sendTransaction instead of sender
-        await sender.sendTransaction({
-            to: proxy.address,
-            data: PoseidonT6.data
-        })
-    } else {
-    }
-    const preImg = [1234n, 5678n, 5678n, 5678n, 5678n] as ethers.BigNumberish[]
-    const jsHash = poseidon5(preImg)
-    const PoseidonT6Contract = PoseidonT6__factory.connect(PoseidonT6.address, provider)
-
-    //@ts-ignore
-    const solHash = await PoseidonT6Contract.hash(preImg)
-    //@ts-ignore
-    ethers.assert(jsHash === solHash, "whoop hash didn't match something is really wrong!!")
-    return PoseidonT6.address
-}
-
 describe("QuinaryIMT", () => {
     const SNARK_SCALAR_FIELD = BigInt("21888242871839275222246405745257275088548364400416034343698204186575808495617")
     let quinaryIMT: QuinaryIMT
@@ -66,9 +22,6 @@ describe("QuinaryIMT", () => {
         quinaryIMT = library
         quinaryIMTTest = contract
         jsQuinaryIMT = new JSQuinaryIMT(poseidon5, 6, 0, 5)
-
-        // the custom hash function assumes poseidon is deployed using the Nicks method
-        await deployPoseidon()
     })
 
     describe("# init", () => {

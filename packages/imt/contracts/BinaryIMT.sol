@@ -1,17 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
-import {PoseidonT3} from "poseidon-solidity/PoseidonT3.sol";
 import {InternalBinaryIMT, BinaryIMTData} from "./InternalBinaryIMT.sol";
 import {SNARK_SCALAR_FIELD, MAX_DEPTH} from "./Constants.sol";
 error WrongDefaultZeroIndex();
 
 library BinaryIMT {
     using InternalBinaryIMT for *;
-
-    // TODO remove this and change /tasks/deploy-imt-test.ts and also put poseidon nicks method in there
-    function removeMe() public {
-        PoseidonT3.hash([uint256(0), uint256(0)]);
-    }
 
     uint256 internal constant Z_0 = 0;
     uint256 internal constant Z_1 = 14744269619966411208579211824598458697587494354926760081771325075741142829156;
