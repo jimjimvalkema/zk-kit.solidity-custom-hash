@@ -24,7 +24,7 @@ error LeafIndexOutOfRange();
 error WrongMerkleProofPath();
 
 interface IHasher {
-    function hash(uint[2] memory) external pure returns (uint);
+    function hash(uint[2] memory) external view returns (uint);
 }
 
 /// @title Incremental binary Merkle tree.
@@ -35,8 +35,14 @@ library InternalBinaryIMT {
     /// @param self: Tree data.
     /// @param depth: Depth of the tree.
     /// @param zero: Zero value to be used.
-    function _init(BinaryIMTData storage self, uint256 depth, uint256 zero, address hasher, uint256 maxValue) internal {
-        if (zero >= maxValue) {
+    function _init(
+        BinaryIMTData storage self,
+        uint256 depth,
+        uint256 zero,
+        address hasher,
+        uint256 hasherLimit
+    ) internal {
+        if (zero >= hasherLimit) {
             revert ValueGreaterThanSnarkScalarField();
         } else if (depth <= 0 || depth > MAX_DEPTH) {
             revert DepthNotSupported();
@@ -79,11 +85,11 @@ library InternalBinaryIMT {
         uint256 leaf,
         address hasher,
         function(uint256) pure returns (uint256) _defaultZero,
-        uint256 maxValue
+        uint256 hasherLimit
     ) internal returns (uint256) {
         uint256 depth = self.depth;
 
-        if (leaf >= maxValue) {
+        if (leaf >= hasherLimit) {
             revert ValueGreaterThanSnarkScalarField();
         } else if (self.numberOfLeaves >= 2 ** depth) {
             revert TreeIsFull();
@@ -126,13 +132,13 @@ library InternalBinaryIMT {
         uint256[] calldata proofSiblings,
         uint8[] calldata proofPathIndices,
         address hasher,
-        uint256 maxValue
+        uint256 hasherLimit
     ) internal {
         if (newLeaf == leaf) {
             revert NewLeafCannotEqualOldLeaf();
-        } else if (newLeaf >= maxValue) {
+        } else if (newLeaf >= hasherLimit) {
             revert ValueGreaterThanSnarkScalarField();
-        } else if (!_verify(self, leaf, proofSiblings, proofPathIndices, hasher, maxValue)) {
+        } else if (!_verify(self, leaf, proofSiblings, proofPathIndices, hasher, hasherLimit)) {
             revert LeafDoesNotExist();
         }
 
@@ -181,7 +187,7 @@ library InternalBinaryIMT {
         uint8[] calldata proofPathIndices,
         address hasher,
         uint256 defaultZero,
-        uint256 maxValue
+        uint256 hasherLimit
     ) internal {
         _update(
             self,
@@ -190,7 +196,7 @@ library InternalBinaryIMT {
             proofSiblings,
             proofPathIndices,
             hasher,
-            maxValue
+            hasherLimit
         );
     }
 
@@ -206,11 +212,11 @@ library InternalBinaryIMT {
         uint256[] calldata proofSiblings,
         uint8[] calldata proofPathIndices,
         address hasher,
-        uint256 maxValue
+        uint256 hasherLimit
     ) internal view returns (bool) {
         uint256 depth = self.depth;
 
-        if (leaf >= maxValue) {
+        if (leaf >= hasherLimit) {
             revert ValueGreaterThanSnarkScalarField();
         } else if (proofPathIndices.length != depth || proofSiblings.length != depth) {
             revert WrongMerkleProofPath();
@@ -219,7 +225,7 @@ library InternalBinaryIMT {
         uint256 hash = leaf;
 
         for (uint8 i = 0; i < depth; ) {
-            if (proofSiblings[i] >= maxValue) {
+            if (proofSiblings[i] >= hasherLimit) {
                 revert ValueGreaterThanSnarkScalarField();
             } else if (proofPathIndices[i] != 1 && proofPathIndices[i] != 0) {
                 revert WrongMerkleProofPath();
