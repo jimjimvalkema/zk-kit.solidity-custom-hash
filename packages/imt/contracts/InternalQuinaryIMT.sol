@@ -14,12 +14,17 @@ struct QuinaryIMTData {
     mapping(uint256 => uint256[5]) lastSubtrees; // Caching these values is essential to efficient appends.
 }
 
+error ValueGreaterThanSnarkScalarField();
 error DepthNotSupported();
 error TreeIsFull();
 error NewLeafCannotEqualOldLeaf();
 error LeafDoesNotExist();
 error LeafIndexOutOfRange();
 error WrongMerkleProofPath();
+
+interface IHasher {
+    function hash(uint256[5] memory) external view returns (uint256);
+}
 
 /// @title Incremental quinary Merkle tree.
 /// @dev The incremental tree allows to calculate the root hash each time a leaf is added, ensuring
@@ -33,9 +38,12 @@ library InternalQuinaryIMT {
         QuinaryIMTData storage self,
         uint256 depth,
         uint256 zero,
-        function(uint256[5] memory) pure returns (uint256) hasher
+        address hasher,
+        uint256 hasherLimit
     ) internal {
-        if (depth <= 0 || depth > MAX_DEPTH) {
+        if (zero >= hasherLimit) {
+            revert ValueGreaterThanSnarkScalarField();
+        } else if (depth <= 0 || depth > MAX_DEPTH) {
             revert DepthNotSupported();
         }
 
@@ -52,7 +60,7 @@ library InternalQuinaryIMT {
                 }
             }
 
-            zero = hasher(zeroChildren);
+            zero = IHasher(hasher).hash(zeroChildren);
 
             unchecked {
                 ++i;
@@ -65,14 +73,12 @@ library InternalQuinaryIMT {
     /// @dev Inserts a leaf in the tree.
     /// @param self: Tree data.
     /// @param leaf: Leaf to be inserted.
-    function _insert(
-        QuinaryIMTData storage self,
-        uint256 leaf,
-        function(uint256[5] memory) pure returns (uint256) hasher
-    ) internal {
+    function _insert(QuinaryIMTData storage self, uint256 leaf, address hasher, uint256 hasherLimit) internal {
         uint256 depth = self.depth;
 
-        if (self.numberOfLeaves >= 5 ** depth) {
+        if (leaf >= hasherLimit) {
+            revert ValueGreaterThanSnarkScalarField();
+        } else if (self.numberOfLeaves >= 5 ** depth) {
             revert TreeIsFull();
         }
 
@@ -93,7 +99,7 @@ library InternalQuinaryIMT {
                 }
             }
 
-            hash = hasher(self.lastSubtrees[i]);
+            hash = IHasher(hasher).hash(self.lastSubtrees[i]);
             index /= 5;
 
             unchecked {
@@ -117,11 +123,14 @@ library InternalQuinaryIMT {
         uint256 newLeaf,
         uint256[4][] calldata proofSiblings,
         uint8[] calldata proofPathIndices,
-        function(uint256[5] memory) pure returns (uint256) hasher
+        address hasher,
+        uint256 hasherLimit
     ) internal {
         if (newLeaf == leaf) {
             revert NewLeafCannotEqualOldLeaf();
-        } else if (!_verify(self, leaf, proofSiblings, proofPathIndices, hasher)) {
+        } else if (newLeaf >= hasherLimit) {
+            revert ValueGreaterThanSnarkScalarField();
+        } else if (!_verify(self, leaf, proofSiblings, proofPathIndices, hasher, hasherLimit)) {
             revert LeafDoesNotExist();
         }
 
@@ -150,7 +159,7 @@ library InternalQuinaryIMT {
                 self.lastSubtrees[i][proofPathIndices[i]] = hash;
             }
 
-            hash = hasher(nodes);
+            hash = IHasher(hasher).hash(nodes);
 
             unchecked {
                 ++i;
@@ -174,9 +183,10 @@ library InternalQuinaryIMT {
         uint256 leaf,
         uint256[4][] calldata proofSiblings,
         uint8[] calldata proofPathIndices,
-        function(uint256[5] memory) pure returns (uint256) hasher
+        address hasher,
+        uint256 hasherLimit
     ) internal {
-        _update(self, leaf, self.zeroes[0], proofSiblings, proofPathIndices, hasher);
+        _update(self, leaf, self.zeroes[0], proofSiblings, proofPathIndices, hasher, hasherLimit);
     }
 
     /// @dev Verify if the path is correct and the leaf is part of the tree.
@@ -190,11 +200,14 @@ library InternalQuinaryIMT {
         uint256 leaf,
         uint256[4][] calldata proofSiblings,
         uint8[] calldata proofPathIndices,
-        function(uint256[5] memory) pure returns (uint256) hasher
+        address hasher,
+        uint256 hasherLimit
     ) internal view returns (bool) {
         uint256 depth = self.depth;
 
-        if (proofPathIndices.length != depth || proofSiblings.length != depth) {
+        if (leaf >= hasherLimit) {
+            revert ValueGreaterThanSnarkScalarField();
+        } else if (proofPathIndices.length != depth || proofSiblings.length != depth) {
             revert WrongMerkleProofPath();
         }
 
@@ -209,19 +222,13 @@ library InternalQuinaryIMT {
 
             for (uint8 j = 0; j < 5; ) {
                 if (j < proofPathIndices[i]) {
-                    // require(
-                    //     proofSiblings[i][j] < SNARK_SCALAR_FIELD,
-                    //     "QuinaryIMT: sibling node must be < SNARK_SCALAR_FIELD"
-                    // );
+                    require(proofSiblings[i][j] < hasherLimit, "QuinaryIMT: sibling node must be < hasherLimit");
 
                     nodes[j] = proofSiblings[i][j];
                 } else if (j == proofPathIndices[i]) {
                     nodes[j] = hash;
                 } else {
-                    // require(
-                    //     proofSiblings[i][j - 1] < SNARK_SCALAR_FIELD,
-                    //     "QuinaryIMT: sibling node must be < SNARK_SCALAR_FIELD"
-                    // );
+                    require(proofSiblings[i][j - 1] < hasherLimit, "QuinaryIMT: sibling node must be < hasherLimit");
 
                     nodes[j] = proofSiblings[i][j - 1];
                 }
@@ -231,7 +238,7 @@ library InternalQuinaryIMT {
                 }
             }
 
-            hash = hasher(nodes);
+            hash = IHasher(hasher).hash(nodes);
 
             unchecked {
                 ++i;

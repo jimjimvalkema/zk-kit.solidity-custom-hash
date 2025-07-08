@@ -1,11 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
-
 import {InternalBinaryIMT, BinaryIMTData} from "./InternalBinaryIMT.sol";
-import {PoseidonT3} from "poseidon-solidity/PoseidonT3.sol";
-import {SNARK_SCALAR_FIELD} from "./Constants.sol";
-
-error ValueGreaterThanSnarkScalarField();
+import {SNARK_SCALAR_FIELD, MAX_DEPTH} from "./Constants.sol";
 error WrongDefaultZeroIndex();
 
 library BinaryIMT {
@@ -82,26 +78,14 @@ library BinaryIMT {
         revert WrongDefaultZeroIndex();
     }
 
-    function hasher(uint256[2] memory inputs) internal pure returns (uint256) {
-        if (inputs[0] >= SNARK_SCALAR_FIELD || inputs[1] >= SNARK_SCALAR_FIELD) {
-            revert ValueGreaterThanSnarkScalarField();
-        }
-        return PoseidonT3.hash(inputs);
-    }
-
-    function hasherUnsafe(uint256[2] memory inputs) internal pure returns (uint256) {
-        return PoseidonT3.hash(inputs);
-    }
+    address internal constant hasher = 0x3333333C0A88F9BE4fd23ed0536F9B6c427e3B93;
 
     function defaultZero(uint256 index) public pure returns (uint256) {
         return _defaultZero(index);
     }
 
     function init(BinaryIMTData storage self, uint256 depth, uint256 zero) public {
-        if (zero >= SNARK_SCALAR_FIELD) {
-            revert ValueGreaterThanSnarkScalarField();
-        }
-        InternalBinaryIMT._init(self, depth, zero, hasherUnsafe);
+        InternalBinaryIMT._init(self, depth, zero, hasher, SNARK_SCALAR_FIELD);
     }
 
     function initWithDefaultZeroes(BinaryIMTData storage self, uint256 depth) public {
@@ -109,10 +93,7 @@ library BinaryIMT {
     }
 
     function insert(BinaryIMTData storage self, uint256 leaf) public returns (uint256) {
-        if (leaf >= SNARK_SCALAR_FIELD) {
-            revert ValueGreaterThanSnarkScalarField();
-        }
-        return InternalBinaryIMT._insert(self, leaf, hasherUnsafe, _defaultZero);
+        return InternalBinaryIMT._insert(self, leaf, hasher, _defaultZero, SNARK_SCALAR_FIELD);
     }
 
     function update(
@@ -122,10 +103,7 @@ library BinaryIMT {
         uint256[] calldata proofSiblings,
         uint8[] calldata proofPathIndices
     ) public {
-        if (leaf >= SNARK_SCALAR_FIELD || newLeaf >= SNARK_SCALAR_FIELD) {
-            revert ValueGreaterThanSnarkScalarField();
-        }
-        InternalBinaryIMT._update(self, leaf, newLeaf, proofSiblings, proofPathIndices, hasher);
+        InternalBinaryIMT._update(self, leaf, newLeaf, proofSiblings, proofPathIndices, hasher, SNARK_SCALAR_FIELD);
     }
 
     function remove(
@@ -134,9 +112,14 @@ library BinaryIMT {
         uint256[] calldata proofSiblings,
         uint8[] calldata proofPathIndices
     ) public {
-        if (leaf >= SNARK_SCALAR_FIELD) {
-            revert ValueGreaterThanSnarkScalarField();
-        }
-        InternalBinaryIMT._remove(self, leaf, proofSiblings, proofPathIndices, hasher, Z_0);
+        InternalBinaryIMT._remove(
+            self,
+            leaf,
+            proofSiblings,
+            proofPathIndices,
+            hasher,
+            _defaultZero(0),
+            SNARK_SCALAR_FIELD
+        );
     }
 }

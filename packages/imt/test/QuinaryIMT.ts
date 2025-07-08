@@ -4,6 +4,12 @@ import { run } from "hardhat"
 import { poseidon5 } from "poseidon-lite"
 import { QuinaryIMT, QuinaryIMTTest } from "../typechain-types"
 
+import poseidonSolidity from "poseidon-solidity"
+
+import { ethers } from "ethers"
+import { PoseidonT6__factory } from "../typechain-types"
+import hre from "hardhat"
+
 describe("QuinaryIMT", () => {
     const SNARK_SCALAR_FIELD = BigInt("21888242871839275222246405745257275088548364400416034343698204186575808495617")
     let quinaryIMT: QuinaryIMT

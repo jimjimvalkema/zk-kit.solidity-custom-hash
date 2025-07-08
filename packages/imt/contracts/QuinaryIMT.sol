@@ -2,42 +2,18 @@
 pragma solidity ^0.8.4;
 
 import {InternalQuinaryIMT, QuinaryIMTData} from "./InternalQuinaryIMT.sol";
-import {PoseidonT6} from "poseidon-solidity/PoseidonT6.sol";
 import {SNARK_SCALAR_FIELD} from "./Constants.sol";
-error ValueGreaterThanSnarkScalarField();
 
 library QuinaryIMT {
     using InternalQuinaryIMT for *;
-
-    function hasher(uint256[5] memory inputs) internal pure returns (uint256) {
-        if (
-            inputs[0] >= SNARK_SCALAR_FIELD ||
-            inputs[1] >= SNARK_SCALAR_FIELD ||
-            inputs[2] >= SNARK_SCALAR_FIELD ||
-            inputs[3] >= SNARK_SCALAR_FIELD ||
-            inputs[4] >= SNARK_SCALAR_FIELD
-        ) {
-            revert ValueGreaterThanSnarkScalarField();
-        }
-        return PoseidonT6.hash(inputs);
-    }
-
-    function hasherUnsafe(uint256[5] memory inputs) internal pure returns (uint256) {
-        return PoseidonT6.hash(inputs);
-    }
+    address internal constant hasher = 0x666333F371685334CdD69bdDdaFBABc87CE7c7Db;
 
     function init(QuinaryIMTData storage self, uint256 depth, uint256 zero) public {
-        if (zero >= SNARK_SCALAR_FIELD) {
-            revert ValueGreaterThanSnarkScalarField();
-        }
-        InternalQuinaryIMT._init(self, depth, zero, hasherUnsafe);
+        InternalQuinaryIMT._init(self, depth, zero, hasher, SNARK_SCALAR_FIELD);
     }
 
     function insert(QuinaryIMTData storage self, uint256 leaf) public {
-        if (leaf >= SNARK_SCALAR_FIELD) {
-            revert ValueGreaterThanSnarkScalarField();
-        }
-        InternalQuinaryIMT._insert(self, leaf, hasherUnsafe);
+        InternalQuinaryIMT._insert(self, leaf, hasher, SNARK_SCALAR_FIELD);
     }
 
     function update(
@@ -47,10 +23,7 @@ library QuinaryIMT {
         uint256[4][] calldata proofSiblings,
         uint8[] calldata proofPathIndices
     ) public {
-        if (leaf >= SNARK_SCALAR_FIELD || newLeaf >= SNARK_SCALAR_FIELD) {
-            revert ValueGreaterThanSnarkScalarField();
-        }
-        InternalQuinaryIMT._update(self, leaf, newLeaf, proofSiblings, proofPathIndices, hasher);
+        InternalQuinaryIMT._update(self, leaf, newLeaf, proofSiblings, proofPathIndices, hasher, SNARK_SCALAR_FIELD);
     }
 
     function remove(
@@ -59,10 +32,7 @@ library QuinaryIMT {
         uint256[4][] calldata proofSiblings,
         uint8[] calldata proofPathIndices
     ) public {
-        if (leaf >= SNARK_SCALAR_FIELD) {
-            revert ValueGreaterThanSnarkScalarField();
-        }
-        InternalQuinaryIMT._remove(self, leaf, proofSiblings, proofPathIndices, hasher);
+        InternalQuinaryIMT._remove(self, leaf, proofSiblings, proofPathIndices, hasher, SNARK_SCALAR_FIELD);
     }
 
     function verify(
@@ -71,9 +41,6 @@ library QuinaryIMT {
         uint256[4][] calldata proofSiblings,
         uint8[] calldata proofPathIndices
     ) private view returns (bool) {
-        if (leaf >= SNARK_SCALAR_FIELD) {
-            revert ValueGreaterThanSnarkScalarField();
-        }
-        return InternalQuinaryIMT._verify(self, leaf, proofSiblings, proofPathIndices, hasher);
+        return InternalQuinaryIMT._verify(self, leaf, proofSiblings, proofPathIndices, hasher, SNARK_SCALAR_FIELD);
     }
 }
