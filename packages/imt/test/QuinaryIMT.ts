@@ -4,12 +4,6 @@ import { run } from "hardhat"
 import { poseidon5 } from "poseidon-lite"
 import { QuinaryIMT, QuinaryIMTTest } from "../typechain-types"
 
-import poseidonSolidity from "poseidon-solidity"
-
-import { ethers } from "ethers"
-import { PoseidonT6__factory } from "../typechain-types"
-import hre from "hardhat"
-
 describe("QuinaryIMT", () => {
     const SNARK_SCALAR_FIELD = BigInt("21888242871839275222246405745257275088548364400416034343698204186575808495617")
     let quinaryIMT: QuinaryIMT
@@ -44,7 +38,7 @@ describe("QuinaryIMT", () => {
         it("Should not insert a leaf if its value is > SNARK_SCALAR_FIELD", async () => {
             const transaction = quinaryIMTTest.insert(SNARK_SCALAR_FIELD)
 
-            await expect(transaction).to.be.revertedWithCustomError(quinaryIMT, "ValueGreaterThanSnarkScalarField")
+            await expect(transaction).to.be.revertedWithCustomError(quinaryIMT, "ValueGreaterThanHasherLimit")
         })
 
         it("Should insert a leaf in a tree", async () => {
@@ -103,7 +97,7 @@ describe("QuinaryIMT", () => {
 
             const transaction = quinaryIMTTest.update(1, SNARK_SCALAR_FIELD, [[0, 1, 2, 3]], [0])
 
-            await expect(transaction).to.be.revertedWithCustomError(quinaryIMT, "ValueGreaterThanSnarkScalarField")
+            await expect(transaction).to.be.revertedWithCustomError(quinaryIMT, "ValueGreaterThanHasherLimit")
         })
 
         it("Should not update a leaf if its original value is > SNARK_SCALAR_FIELD", async () => {
@@ -112,7 +106,7 @@ describe("QuinaryIMT", () => {
 
             const transaction = quinaryIMTTest.update(SNARK_SCALAR_FIELD, 2, [[0, 1, 2, 3]], [0])
 
-            await expect(transaction).to.be.revertedWithCustomError(quinaryIMT, "ValueGreaterThanSnarkScalarField")
+            await expect(transaction).to.be.revertedWithCustomError(quinaryIMT, "ValueGreaterThanHasherLimit")
         })
 
         it("Should not update a leaf if the path indices are wrong", async () => {
@@ -162,7 +156,7 @@ describe("QuinaryIMT", () => {
         })
 
         it("Should not update a leaf that hasn't been inserted yet", async () => {
-            quinaryIMTTest.init(jsQuinaryIMT.depth)
+            await quinaryIMTTest.init(jsQuinaryIMT.depth)
 
             for (let i = 0; i < 4; i += 1) {
                 const leaf = i + 1
@@ -204,7 +198,7 @@ describe("QuinaryIMT", () => {
         it("Should not remove a leaf if its value is > SNARK_SCALAR_FIELD", async () => {
             const transaction = quinaryIMTTest.remove(SNARK_SCALAR_FIELD, [[0, 1, 2, 3]], [0])
 
-            await expect(transaction).to.be.revertedWithCustomError(quinaryIMT, "ValueGreaterThanSnarkScalarField")
+            await expect(transaction).to.be.revertedWithCustomError(quinaryIMT, "ValueGreaterThanHasherLimit")
         })
 
         it("Should not remove a leaf that does not exist", async () => {

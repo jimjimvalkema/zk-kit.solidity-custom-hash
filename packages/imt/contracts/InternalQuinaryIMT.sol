@@ -14,7 +14,7 @@ struct QuinaryIMTData {
     mapping(uint256 => uint256[5]) lastSubtrees; // Caching these values is essential to efficient appends.
 }
 
-error ValueGreaterThanSnarkScalarField();
+error ValueGreaterThanHasherLimit();
 error DepthNotSupported();
 error TreeIsFull();
 error NewLeafCannotEqualOldLeaf();
@@ -42,7 +42,7 @@ library InternalQuinaryIMT {
         uint256 hasherLimit
     ) internal {
         if (zero >= hasherLimit) {
-            revert ValueGreaterThanSnarkScalarField();
+            revert ValueGreaterThanHasherLimit();
         } else if (depth <= 0 || depth > MAX_DEPTH) {
             revert DepthNotSupported();
         }
@@ -77,7 +77,7 @@ library InternalQuinaryIMT {
         uint256 depth = self.depth;
 
         if (leaf >= hasherLimit) {
-            revert ValueGreaterThanSnarkScalarField();
+            revert ValueGreaterThanHasherLimit();
         } else if (self.numberOfLeaves >= 5 ** depth) {
             revert TreeIsFull();
         }
@@ -129,7 +129,7 @@ library InternalQuinaryIMT {
         if (newLeaf == leaf) {
             revert NewLeafCannotEqualOldLeaf();
         } else if (newLeaf >= hasherLimit) {
-            revert ValueGreaterThanSnarkScalarField();
+            revert ValueGreaterThanHasherLimit();
         } else if (!_verify(self, leaf, proofSiblings, proofPathIndices, hasher, hasherLimit)) {
             revert LeafDoesNotExist();
         }
@@ -206,7 +206,7 @@ library InternalQuinaryIMT {
         uint256 depth = self.depth;
 
         if (leaf >= hasherLimit) {
-            revert ValueGreaterThanSnarkScalarField();
+            revert ValueGreaterThanHasherLimit();
         } else if (proofPathIndices.length != depth || proofSiblings.length != depth) {
             revert WrongMerkleProofPath();
         }

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 import {InternalBinaryIMT, BinaryIMTData} from "./InternalBinaryIMT.sol";
-import {SNARK_SCALAR_FIELD, MAX_DEPTH} from "./Constants.sol";
+import {SNARK_SCALAR_FIELD} from "./Constants.sol";
 error WrongDefaultZeroIndex();
 
 library BinaryIMT {
