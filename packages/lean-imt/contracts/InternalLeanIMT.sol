@@ -23,6 +23,10 @@ error LeafCannotBeZero();
 error LeafAlreadyExists();
 error LeafDoesNotExist();
 
+interface IHasher {
+    function hash(uint[2] memory) external view returns (uint);
+}
+
 /// @title Lean Incremental binary Merkle tree.
 /// @dev The LeanIMT is an optimized version of the BinaryIMT.
 /// This implementation eliminates the use of zeroes, and make the tree depth dynamic.
@@ -31,6 +35,8 @@ error LeafDoesNotExist();
 /// it is updated based on the number of leaves in the tree. This approach
 /// results in the calculation of significantly fewer hashes, making the tree more efficient.
 library InternalLeanIMT {
+    address internal constant hasher = 0x3333333C0A88F9BE4fd23ed0536F9B6c427e3B93;
+
     /// @dev Inserts a new leaf into the incremental merkle tree.
     /// The function ensures that the leaf is valid according to the
     /// constraints of the tree and then updates the tree's structure accordingly.
@@ -64,7 +70,7 @@ library InternalLeanIMT {
 
         for (uint256 level = 0; level < treeDepth; ) {
             if ((index >> level) & 1 == 1) {
-                node = PoseidonT3.hash([self.sideNodes[level], node]);
+                node = IHasher(hasher).hash([self.sideNodes[level], node]);
             } else {
                 self.sideNodes[level] = node;
             }
@@ -166,7 +172,7 @@ library InternalLeanIMT {
                 // If it has a right child the result will be the hash(leftNode, rightNode) if not,
                 // it will be the leftNode.
                 if (rightNode != 0) {
-                    parentNode = PoseidonT3.hash([leftNode, rightNode]);
+                    parentNode = IHasher(hasher).hash([leftNode, rightNode]);
                 } else {
                     parentNode = leftNode;
                 }
@@ -256,8 +262,8 @@ library InternalLeanIMT {
                     revert LeafGreaterThanSnarkScalarField();
                 }
 
-                node = PoseidonT3.hash([siblingNodes[i], node]);
-                oldRoot = PoseidonT3.hash([siblingNodes[i], oldRoot]);
+                node = IHasher(hasher).hash([siblingNodes[i], node]);
+                oldRoot = IHasher(hasher).hash([siblingNodes[i], oldRoot]);
 
                 unchecked {
                     ++i;
@@ -272,8 +278,8 @@ library InternalLeanIMT {
                         self.sideNodes[level] = node;
                     }
 
-                    node = PoseidonT3.hash([node, siblingNodes[i]]);
-                    oldRoot = PoseidonT3.hash([oldRoot, siblingNodes[i]]);
+                    node = IHasher(hasher).hash([node, siblingNodes[i]]);
+                    oldRoot = IHasher(hasher).hash([oldRoot, siblingNodes[i]]);
 
                     unchecked {
                         ++i;
