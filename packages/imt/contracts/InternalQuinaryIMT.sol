@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import {PoseidonT6} from "poseidon-solidity/PoseidonT6.sol";
 import {SNARK_SCALAR_FIELD, MAX_DEPTH} from "./Constants.sol";
 
 // Each incremental tree has certain properties and data that will
@@ -23,10 +22,16 @@ error LeafDoesNotExist();
 error LeafIndexOutOfRange();
 error WrongMerkleProofPath();
 
+interface IHasher {
+    function hash(uint[5] memory) external view returns (uint);
+}
+
 /// @title Incremental quinary Merkle tree.
 /// @dev The incremental tree allows to calculate the root hash each time a leaf is added, ensuring
 /// the integrity of the tree.
 library InternalQuinaryIMT {
+    address internal constant hasher = 0x666333F371685334CdD69bdDdaFBABc87CE7c7Db;
+
     /// @dev Initializes a tree.
     /// @param self: Tree data.
     /// @param depth: Depth of the tree.
@@ -51,7 +56,7 @@ library InternalQuinaryIMT {
                 }
             }
 
-            zero = PoseidonT6.hash(zeroChildren);
+            zero = IHasher(hasher).hash(zeroChildren);
 
             unchecked {
                 ++i;
@@ -90,7 +95,7 @@ library InternalQuinaryIMT {
                 }
             }
 
-            hash = PoseidonT6.hash(self.lastSubtrees[i]);
+            hash = IHasher(hasher).hash(self.lastSubtrees[i]);
             index /= 5;
 
             unchecked {
@@ -148,7 +153,7 @@ library InternalQuinaryIMT {
                 self.lastSubtrees[i][proofPathIndices[i]] = hash;
             }
 
-            hash = PoseidonT6.hash(nodes);
+            hash = IHasher(hasher).hash(nodes);
 
             unchecked {
                 ++i;
@@ -229,7 +234,7 @@ library InternalQuinaryIMT {
                 }
             }
 
-            hash = PoseidonT6.hash(nodes);
+            hash = IHasher(hasher).hash(nodes);
 
             unchecked {
                 ++i;

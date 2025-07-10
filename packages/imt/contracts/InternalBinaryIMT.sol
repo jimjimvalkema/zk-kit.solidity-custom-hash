@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import {PoseidonT3} from "poseidon-solidity/PoseidonT3.sol";
 import {SNARK_SCALAR_FIELD, MAX_DEPTH} from "./Constants.sol";
 
 // Each incremental tree has certain properties and data that will
@@ -25,10 +24,16 @@ error LeafDoesNotExist();
 error LeafIndexOutOfRange();
 error WrongMerkleProofPath();
 
+interface IHasher {
+    function hash(uint[2] memory) external view returns (uint);
+}
+
 /// @title Incremental binary Merkle tree.
 /// @dev The incremental tree allows to calculate the root hash each time a leaf is added, ensuring
 /// the integrity of the tree.
 library InternalBinaryIMT {
+    address internal constant hasher = 0x3333333C0A88F9BE4fd23ed0536F9B6c427e3B93;
+
     uint256 internal constant Z_0 = 0;
     uint256 internal constant Z_1 = 14744269619966411208579211824598458697587494354926760081771325075741142829156;
     uint256 internal constant Z_2 = 7423237065226347324353380772367382631490014989348495481811164164159255474657;
@@ -115,7 +120,7 @@ library InternalBinaryIMT {
 
         for (uint8 i = 0; i < depth; ) {
             self.zeroes[i] = zero;
-            zero = PoseidonT3.hash([zero, zero]);
+            zero = IHasher(hasher).hash([zero, zero]);
 
             unchecked {
                 ++i;
@@ -159,7 +164,7 @@ library InternalBinaryIMT {
                 self.lastSubtrees[i][1] = hash;
             }
 
-            hash = PoseidonT3.hash(self.lastSubtrees[i]);
+            hash = IHasher(hasher).hash(self.lastSubtrees[i]);
             index >>= 1;
 
             unchecked {
@@ -205,13 +210,13 @@ library InternalBinaryIMT {
                     self.lastSubtrees[i][0] = hash;
                 }
 
-                hash = PoseidonT3.hash([hash, proofSiblings[i]]);
+                hash = IHasher(hasher).hash([hash, proofSiblings[i]]);
             } else {
                 if (proofSiblings[i] == self.lastSubtrees[i][0]) {
                     self.lastSubtrees[i][1] = hash;
                 }
 
-                hash = PoseidonT3.hash([proofSiblings[i], hash]);
+                hash = IHasher(hasher).hash([proofSiblings[i], hash]);
             }
 
             unchecked {
@@ -270,9 +275,9 @@ library InternalBinaryIMT {
             }
 
             if (proofPathIndices[i] == 0) {
-                hash = PoseidonT3.hash([hash, proofSiblings[i]]);
+                hash = IHasher(hasher).hash([hash, proofSiblings[i]]);
             } else {
-                hash = PoseidonT3.hash([proofSiblings[i], hash]);
+                hash = IHasher(hasher).hash([proofSiblings[i], hash]);
             }
 
             unchecked {
