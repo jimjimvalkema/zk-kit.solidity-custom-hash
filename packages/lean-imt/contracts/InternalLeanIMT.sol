@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import {PoseidonT3} from "poseidon-solidity/PoseidonT3.sol";
-
 struct LeanIMTData {
     // Tracks the current number of leaves in the tree.
     uint256 size;
@@ -173,7 +171,7 @@ library InternalLeanIMT {
                 self.sideNodes[level] = currentLevelNewNodes[currentLevelSize - currentLevelStartIndex - 2];
             }
 
-            // i removed this because adding hasher and hasherLimit was creating a stack to deep error
+            // @jimjim: i removed this because adding hasher and hasherLimit was creating a stack to deep error
             // uint256 numberOfNewNodes = nextLevelSize - nextLevelStartIndex;
             // uint256[] memory nextLevelNewNodes = new uint256[](nextLevelSize - nextLevelStartIndex);
             for (uint256 i = 0; i < (nextLevelSize - nextLevelStartIndex); ) {
