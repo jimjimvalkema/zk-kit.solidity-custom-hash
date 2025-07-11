@@ -2,7 +2,6 @@
 pragma solidity ^0.8.4;
 
 import {PoseidonT3} from "poseidon-solidity/PoseidonT3.sol";
-import {SNARK_SCALAR_FIELD} from "./Constants.sol";
 
 struct LeanIMTData {
     // Tracks the current number of leaves in the tree.
@@ -18,10 +17,14 @@ struct LeanIMTData {
 }
 
 error WrongSiblingNodes();
-error LeafGreaterThanSnarkScalarField();
+error LeafGreaterThanHasherLimit();
 error LeafCannotBeZero();
 error LeafAlreadyExists();
 error LeafDoesNotExist();
+
+interface IHasher {
+    function hash(uint[2] memory) external view returns (uint);
+}
 
 /// @title Lean Incremental binary Merkle tree.
 /// @dev The LeanIMT is an optimized version of the BinaryIMT.
@@ -37,9 +40,14 @@ library InternalLeanIMT {
     /// @param self: A storage reference to the 'LeanIMTData' struct.
     /// @param leaf: The value of the new leaf to be inserted into the tree.
     /// @return The new hash of the node after the leaf has been inserted.
-    function _insert(LeanIMTData storage self, uint256 leaf) internal returns (uint256) {
-        if (leaf >= SNARK_SCALAR_FIELD) {
-            revert LeafGreaterThanSnarkScalarField();
+    function _insert(
+        LeanIMTData storage self,
+        uint256 leaf,
+        address hasher,
+        uint256 hasherLimit
+    ) internal returns (uint256) {
+        if (leaf >= hasherLimit) {
+            revert LeafGreaterThanHasherLimit();
         } else if (leaf == 0) {
             revert LeafCannotBeZero();
         } else if (_has(self, leaf)) {
@@ -64,7 +72,7 @@ library InternalLeanIMT {
 
         for (uint256 level = 0; level < treeDepth; ) {
             if ((index >> level) & 1 == 1) {
-                node = PoseidonT3.hash([self.sideNodes[level], node]);
+                node = IHasher(hasher).hash([self.sideNodes[level], node]);
             } else {
                 self.sideNodes[level] = node;
             }
@@ -88,14 +96,19 @@ library InternalLeanIMT {
     /// @param self: A storage reference to the 'LeanIMTData' struct.
     /// @param leaves: The values of the new leaves to be inserted into the tree.
     /// @return The root after the leaves have been inserted.
-    function _insertMany(LeanIMTData storage self, uint256[] calldata leaves) internal returns (uint256) {
+    function _insertMany(
+        LeanIMTData storage self,
+        uint256[] calldata leaves,
+        address hasher,
+        uint256 hasherLimit
+    ) internal returns (uint256) {
         // Cache tree size to optimize gas
         uint256 treeSize = self.size;
 
         // Check that all the new values are correct to be added.
         for (uint256 i = 0; i < leaves.length; ) {
-            if (leaves[i] >= SNARK_SCALAR_FIELD) {
-                revert LeafGreaterThanSnarkScalarField();
+            if (leaves[i] >= hasherLimit) {
+                revert LeafGreaterThanHasherLimit();
             } else if (leaves[i] == 0) {
                 revert LeafCannotBeZero();
             } else if (_has(self, leaves[i])) {
@@ -141,14 +154,35 @@ library InternalLeanIMT {
         for (uint256 level = 0; level < treeDepth; ) {
             // The number of nodes for the new level that will be created,
             // only the new values, not the entire level.
-            uint256 numberOfNewNodes = nextLevelSize - nextLevelStartIndex;
-            uint256[] memory nextLevelNewNodes = new uint256[](numberOfNewNodes);
-            for (uint256 i = 0; i < numberOfNewNodes; ) {
+
+            // @jimjim: i re-used currentLevelNewNodes so i can delete nextLevelNewNodes so we stay below the stack too deep
+            // but that means we need to cache the sideNode here in case we need it.
+            // because we need to update side nodes before the for loop that modifies it.
+            // But we cant use the new sideNode created while hashing, we need the old one! so we store the old one here!
+            uint256 sideNode = self.sideNodes[level];
+
+            // Update the `sideNodes` variable.
+            // If `currentLevelSize` is odd, the saved value will be the last value of the array
+            // if it is even and there are more than 1 element in `currentLevelNewNodes`, the saved value
+            // will be the value before the last one.
+            // If it is even and there is only one element, there is no need to save anything because
+            // the correct value for this level was already saved before.
+            if (currentLevelSize & 1 == 1) {
+                self.sideNodes[level] = currentLevelNewNodes[currentLevelSize - currentLevelStartIndex - 1];
+            } else if (currentLevelNewNodes.length > 1) {
+                self.sideNodes[level] = currentLevelNewNodes[currentLevelSize - currentLevelStartIndex - 2];
+            }
+
+            // i removed this because adding hasher and hasherLimit was creating a stack to deep error
+            // uint256 numberOfNewNodes = nextLevelSize - nextLevelStartIndex;
+            // uint256[] memory nextLevelNewNodes = new uint256[](nextLevelSize - nextLevelStartIndex);
+            for (uint256 i = 0; i < (nextLevelSize - nextLevelStartIndex); ) {
                 uint256 leftNode;
 
                 // Assign the left node using the saved path or the position in the array.
-                if ((i + nextLevelStartIndex) * 2 < currentLevelStartIndex) {
-                    leftNode = self.sideNodes[level];
+                if (i == 0 && (nextLevelStartIndex * 2 < currentLevelStartIndex)) {
+                    //leftNode = self.sideNodes[level];
+                    leftNode = sideNode;
                 } else {
                     leftNode = currentLevelNewNodes[(i + nextLevelStartIndex) * 2 - currentLevelStartIndex];
                 }
@@ -166,28 +200,16 @@ library InternalLeanIMT {
                 // If it has a right child the result will be the hash(leftNode, rightNode) if not,
                 // it will be the leftNode.
                 if (rightNode != 0) {
-                    parentNode = PoseidonT3.hash([leftNode, rightNode]);
+                    parentNode = IHasher(hasher).hash([leftNode, rightNode]);
                 } else {
                     parentNode = leftNode;
                 }
 
-                nextLevelNewNodes[i] = parentNode;
+                currentLevelNewNodes[i] = parentNode;
 
                 unchecked {
                     ++i;
                 }
-            }
-
-            // Update the `sideNodes` variable.
-            // If `currentLevelSize` is odd, the saved value will be the last value of the array
-            // if it is even and there are more than 1 element in `currentLevelNewNodes`, the saved value
-            // will be the value before the last one.
-            // If it is even and there is only one element, there is no need to save anything because
-            // the correct value for this level was already saved before.
-            if (currentLevelSize & 1 == 1) {
-                self.sideNodes[level] = currentLevelNewNodes[currentLevelNewNodes.length - 1];
-            } else if (currentLevelNewNodes.length > 1) {
-                self.sideNodes[level] = currentLevelNewNodes[currentLevelNewNodes.length - 2];
             }
 
             currentLevelStartIndex = nextLevelStartIndex;
@@ -197,7 +219,7 @@ library InternalLeanIMT {
             nextLevelStartIndex >>= 1;
 
             // Update the next array that will be used to calculate the next level.
-            currentLevelNewNodes = nextLevelNewNodes;
+            //currentLevelNewNodes = nextLevelNewNodes;
 
             currentLevelSize = nextLevelSize;
 
@@ -230,10 +252,12 @@ library InternalLeanIMT {
         LeanIMTData storage self,
         uint256 oldLeaf,
         uint256 newLeaf,
-        uint256[] calldata siblingNodes
+        uint256[] calldata siblingNodes,
+        address hasher,
+        uint256 hasherLimit
     ) internal returns (uint256) {
-        if (newLeaf >= SNARK_SCALAR_FIELD) {
-            revert LeafGreaterThanSnarkScalarField();
+        if (newLeaf >= hasherLimit) {
+            revert LeafGreaterThanHasherLimit();
         } else if (!_has(self, oldLeaf)) {
             revert LeafDoesNotExist();
         } else if (_has(self, newLeaf)) {
@@ -252,28 +276,28 @@ library InternalLeanIMT {
 
         for (uint256 level = 0; level < treeDepth; ) {
             if ((index >> level) & 1 == 1) {
-                if (siblingNodes[i] >= SNARK_SCALAR_FIELD) {
-                    revert LeafGreaterThanSnarkScalarField();
+                if (siblingNodes[i] >= hasherLimit) {
+                    revert LeafGreaterThanHasherLimit();
                 }
 
-                node = PoseidonT3.hash([siblingNodes[i], node]);
-                oldRoot = PoseidonT3.hash([siblingNodes[i], oldRoot]);
+                node = IHasher(hasher).hash([siblingNodes[i], node]);
+                oldRoot = IHasher(hasher).hash([siblingNodes[i], oldRoot]);
 
                 unchecked {
                     ++i;
                 }
             } else {
                 if (index >> level != lastIndex >> level) {
-                    if (siblingNodes[i] >= SNARK_SCALAR_FIELD) {
-                        revert LeafGreaterThanSnarkScalarField();
+                    if (siblingNodes[i] >= hasherLimit) {
+                        revert LeafGreaterThanHasherLimit();
                     }
 
                     if (self.sideNodes[level] == oldRoot) {
                         self.sideNodes[level] = node;
                     }
 
-                    node = PoseidonT3.hash([node, siblingNodes[i]]);
-                    oldRoot = PoseidonT3.hash([oldRoot, siblingNodes[i]]);
+                    node = IHasher(hasher).hash([node, siblingNodes[i]]);
+                    oldRoot = IHasher(hasher).hash([oldRoot, siblingNodes[i]]);
 
                     unchecked {
                         ++i;
@@ -313,9 +337,11 @@ library InternalLeanIMT {
     function _remove(
         LeanIMTData storage self,
         uint256 oldLeaf,
-        uint256[] calldata siblingNodes
+        uint256[] calldata siblingNodes,
+        address hasher,
+        uint256 hasherLimit
     ) internal returns (uint256) {
-        return _update(self, oldLeaf, 0, siblingNodes);
+        return _update(self, oldLeaf, 0, siblingNodes, hasher, hasherLimit);
     }
 
     /// @dev Checks if a leaf exists in the tree.

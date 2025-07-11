@@ -22,7 +22,7 @@ describe("LeanIMT", () => {
         it("Should not insert a leaf if its value is >= SNARK_SCALAR_FIELD", async () => {
             const transaction = leanIMTTest.insert(SNARK_SCALAR_FIELD)
 
-            await expect(transaction).to.be.revertedWithCustomError(leanIMT, "LeafGreaterThanSnarkScalarField")
+            await expect(transaction).to.be.revertedWithCustomError(leanIMT, "LeafGreaterThanHasherLimit")
         })
 
         it("Should not insert a leaf if it is 0", async () => {
@@ -68,7 +68,7 @@ describe("LeanIMT", () => {
         it("Should not insert a leaf if its value is >= SNARK_SCALAR_FIELD", async () => {
             const transaction = leanIMTTest.insertMany([SNARK_SCALAR_FIELD])
 
-            await expect(transaction).to.be.revertedWithCustomError(leanIMT, "LeafGreaterThanSnarkScalarField")
+            await expect(transaction).to.be.revertedWithCustomError(leanIMT, "LeafGreaterThanHasherLimit")
         })
 
         it("Should not insert a leaf if it is 0", async () => {
@@ -106,6 +106,26 @@ describe("LeanIMT", () => {
             const root = await leanIMTTest.root()
             expect(root).to.equal(jsLeanIMT.root)
         })
+        it("Should insert 10 leaves twice", async () => {
+            const elems1: bigint[] = []
+            for (let i = 0; i < 10; i += 1) {
+                elems1.push(BigInt(i + 1))
+            }
+
+            jsLeanIMT.insertMany(elems1)
+            await leanIMTTest.insertMany(elems1)
+
+            const elems2: bigint[] = []
+            for (let i = 10; i < 20; i += 1) {
+                elems2.push(BigInt(i + 1))
+            }
+
+            jsLeanIMT.insertMany(elems2)
+            await leanIMTTest.insertMany(elems2)
+
+            const root = await leanIMTTest.root()
+            expect(root).to.equal(jsLeanIMT.root)
+        })
         it("Should insert many leaves when the tree is not empty", async () => {
             jsLeanIMT.insert(BigInt(1))
 
@@ -134,7 +154,7 @@ describe("LeanIMT", () => {
         it("Should not update a leaf if its value is >= SNARK_SCALAR_FIELD", async () => {
             const transaction = leanIMTTest.update(2, SNARK_SCALAR_FIELD, [1, 2, 3, 4])
 
-            await expect(transaction).to.be.revertedWithCustomError(leanIMT, "LeafGreaterThanSnarkScalarField")
+            await expect(transaction).to.be.revertedWithCustomError(leanIMT, "LeafGreaterThanHasherLimit")
         })
 
         it("Should update a leaf if that's the only leaf in the tree", async () => {
@@ -181,7 +201,7 @@ describe("LeanIMT", () => {
 
             const transaction = leanIMTTest.update(1, 3, siblings)
 
-            await expect(transaction).to.be.revertedWithCustomError(leanIMT, "LeafGreaterThanSnarkScalarField")
+            await expect(transaction).to.be.revertedWithCustomError(leanIMT, "LeafGreaterThanHasherLimit")
         })
 
         it("Should not update a leaf if its index is odd and the value of at least one sibling node is >= SNARK_SCALAR_FIELD", async () => {
@@ -197,7 +217,7 @@ describe("LeanIMT", () => {
 
             const transaction = leanIMTTest.update(2, 3, siblings)
 
-            await expect(transaction).to.be.revertedWithCustomError(leanIMT, "LeafGreaterThanSnarkScalarField")
+            await expect(transaction).to.be.revertedWithCustomError(leanIMT, "LeafGreaterThanHasherLimit")
         })
 
         it("Should not update a leaf if the siblings are wrong", async () => {
