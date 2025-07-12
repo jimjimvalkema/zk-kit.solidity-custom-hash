@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import {PoseidonT3} from "poseidon-solidity/PoseidonT3.sol";
 import {SNARK_SCALAR_FIELD, MAX_DEPTH} from "./Constants.sol";
+import {IHasher} from "./IHasher.sol";
 
 struct LazyIMTData {
     uint40 maxIndex;
@@ -11,6 +11,8 @@ struct LazyIMTData {
 }
 
 library InternalLazyIMT {
+    address internal constant hasher = 0x3333333C0A88F9BE4fd23ed0536F9B6c427e3B93;
+
     uint40 internal constant MAX_INDEX = (1 << 32) - 1;
 
     uint256 internal constant Z_0 = 0;
@@ -113,7 +115,7 @@ library InternalLazyIMT {
             // it's a left element so we don't hash until there's a right element
             if (index & 1 == 0) break;
             uint40 elementIndex = _indexForElement(i, index - 1);
-            hash = PoseidonT3.hash([self.elements[elementIndex], hash]);
+            hash = IHasher(hasher).hash([self.elements[elementIndex], hash]);
             unchecked {
                 index >>= 1;
                 i++;
@@ -134,10 +136,10 @@ library InternalLazyIMT {
             if (levelCount <= index >> 1) break;
             if (index & 1 == 0) {
                 uint40 elementIndex = _indexForElement(i, index + 1);
-                hash = PoseidonT3.hash([hash, self.elements[elementIndex]]);
+                hash = IHasher(hasher).hash([hash, self.elements[elementIndex]]);
             } else {
                 uint40 elementIndex = _indexForElement(i, index - 1);
-                hash = PoseidonT3.hash([self.elements[elementIndex], hash]);
+                hash = IHasher(hasher).hash([self.elements[elementIndex], hash]);
             }
             unchecked {
                 index >>= 1;
@@ -195,7 +197,7 @@ library InternalLazyIMT {
 
         for (uint8 i = 0; i < depth; ) {
             if (index & 1 == 0) {
-                levels[i + 1] = PoseidonT3.hash([levels[i], _defaultZero(i)]);
+                levels[i + 1] = IHasher(hasher).hash([levels[i], _defaultZero(i)]);
             } else {
                 uint256 levelCount = (numberOfLeaves) >> (i + 1);
                 if (levelCount > index >> 1) {
@@ -203,7 +205,7 @@ library InternalLazyIMT {
                     levels[i + 1] = parent;
                 } else {
                     uint256 sibling = self.elements[_indexForElement(i, index - 1)];
-                    levels[i + 1] = PoseidonT3.hash([sibling, levels[i]]);
+                    levels[i + 1] = IHasher(hasher).hash([sibling, levels[i]]);
                 }
             }
             unchecked {
