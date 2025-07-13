@@ -35,6 +35,8 @@ library InternalLeanIMT {
     /// constraints of the tree and then updates the tree's structure accordingly.
     /// @param self: A storage reference to the 'LeanIMTData' struct.
     /// @param leaf: The value of the new leaf to be inserted into the tree.
+    /// @param hasher: Address of the contract/library implements the hash function with IHasherT3.
+    /// @param hasherLimit: To check inputs for the hasher to never exceed inputs past this limit (ex the SNARK_SCALAR_FIELD)
     /// @return The new hash of the node after the leaf has been inserted.
     function _insert(
         LeanIMTData storage self,
@@ -91,6 +93,8 @@ library InternalLeanIMT {
     /// constraints of the tree and then updates the tree's structure accordingly.
     /// @param self: A storage reference to the 'LeanIMTData' struct.
     /// @param leaves: The values of the new leaves to be inserted into the tree.
+    /// @param hasher: Address of the contract/library implements the hash function with IHasherT3.
+    /// @param hasherLimit: To check inputs for the hasher to never exceed inputs past this limit (ex the SNARK_SCALAR_FIELD)
     /// @return The root after the leaves have been inserted.
     function _insertMany(
         LeanIMTData storage self,
@@ -236,6 +240,8 @@ library InternalLeanIMT {
     /// @param oldLeaf: The value of the leaf that is to be updated.
     /// @param newLeaf: The new value that will replace the oldLeaf in the tree.
     /// @param siblingNodes: An array of sibling nodes that are necessary to recalculate the path to the root.
+    /// @param hasher: Address of the contract/library implements the hash function with IHasherT3.
+    /// @param hasherLimit: To check inputs for the hasher to never exceed inputs past this limit (ex the SNARK_SCALAR_FIELD)
     /// @return The new hash of the updated node after the leaf has been updated.
     function _update(
         LeanIMTData storage self,
@@ -322,6 +328,8 @@ library InternalLeanIMT {
     /// @param self: A storage reference to the 'LeanIMTData' struct.
     /// @param oldLeaf: The value of the leaf to be removed.
     /// @param siblingNodes: An array of sibling nodes required for updating the path to the root after removal.
+    /// @param hasher: Address of the contract/library implements the hash function with IHasherT3.
+    /// @param hasherLimit: To check inputs for the hasher to never exceed inputs past this limit (ex the SNARK_SCALAR_FIELD)
     /// @return The new root hash of the tree after the leaf has been removed.
     function _remove(
         LeanIMTData storage self,
