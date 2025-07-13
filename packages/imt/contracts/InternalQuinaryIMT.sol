@@ -2,6 +2,7 @@
 pragma solidity ^0.8.4;
 
 import {MAX_DEPTH} from "./Constants.sol";
+import {IHasherT6} from "./interfaces/IHasherT6.sol";
 
 // Each incremental tree has certain properties and data that will
 // be used to add new leaves.
@@ -21,10 +22,6 @@ error NewLeafCannotEqualOldLeaf();
 error LeafDoesNotExist();
 error LeafIndexOutOfRange();
 error WrongMerkleProofPath();
-
-interface IHasher {
-    function hash(uint256[5] memory) external view returns (uint256);
-}
 
 /// @title Incremental quinary Merkle tree.
 /// @dev The incremental tree allows to calculate the root hash each time a leaf is added, ensuring
@@ -60,7 +57,7 @@ library InternalQuinaryIMT {
                 }
             }
 
-            zero = IHasher(hasher).hash(zeroChildren);
+            zero = IHasherT6(hasher).hash(zeroChildren);
 
             unchecked {
                 ++i;
@@ -99,7 +96,7 @@ library InternalQuinaryIMT {
                 }
             }
 
-            hash = IHasher(hasher).hash(self.lastSubtrees[i]);
+            hash = IHasherT6(hasher).hash(self.lastSubtrees[i]);
             index /= 5;
 
             unchecked {
@@ -159,7 +156,7 @@ library InternalQuinaryIMT {
                 self.lastSubtrees[i][proofPathIndices[i]] = hash;
             }
 
-            hash = IHasher(hasher).hash(nodes);
+            hash = IHasherT6(hasher).hash(nodes);
 
             unchecked {
                 ++i;
@@ -238,7 +235,7 @@ library InternalQuinaryIMT {
                 }
             }
 
-            hash = IHasher(hasher).hash(nodes);
+            hash = IHasherT6(hasher).hash(nodes);
 
             unchecked {
                 ++i;
