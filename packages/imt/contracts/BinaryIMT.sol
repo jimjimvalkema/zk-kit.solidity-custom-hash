@@ -7,6 +7,9 @@ error WrongDefaultZeroIndex();
 library BinaryIMT {
     using InternalBinaryIMT for *;
 
+    // This is poseidonT3 from: https://github.com/chancehudson/poseidon-solidity
+    address internal constant hasher = 0x3333333C0A88F9BE4fd23ed0536F9B6c427e3B93;
+
     uint256 internal constant Z_0 = 0;
     uint256 internal constant Z_1 = 14744269619966411208579211824598458697587494354926760081771325075741142829156;
     uint256 internal constant Z_2 = 7423237065226347324353380772367382631490014989348495481811164164159255474657;
@@ -77,8 +80,6 @@ library BinaryIMT {
         if (index == 32) return Z_32;
         revert WrongDefaultZeroIndex();
     }
-
-    address internal constant hasher = 0x3333333C0A88F9BE4fd23ed0536F9B6c427e3B93;
 
     function defaultZero(uint256 index) public pure returns (uint256) {
         return _defaultZero(index);

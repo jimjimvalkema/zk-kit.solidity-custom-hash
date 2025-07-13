@@ -2,6 +2,7 @@
 pragma solidity ^0.8.4;
 
 import {MAX_DEPTH} from "./Constants.sol";
+import {IHasherT3} from "./interfaces/IHasherT3.sol";
 
 // Each incremental tree has certain properties and data that will
 // be used to add new leaves.
@@ -22,10 +23,6 @@ error NewLeafCannotEqualOldLeaf();
 error LeafDoesNotExist();
 error LeafIndexOutOfRange();
 error WrongMerkleProofPath();
-
-interface IHasher {
-    function hash(uint[2] memory) external view returns (uint);
-}
 
 /// @title Incremental binary Merkle tree.
 /// @dev The incremental tree allows to calculate the root hash each time a leaf is added, ensuring
@@ -52,7 +49,7 @@ library InternalBinaryIMT {
 
         for (uint8 i = 0; i < depth; ) {
             self.zeroes[i] = zero;
-            zero = IHasher(hasher).hash([zero, zero]);
+            zero = IHasherT3(hasher).hash([zero, zero]);
 
             unchecked {
                 ++i;
@@ -106,7 +103,7 @@ library InternalBinaryIMT {
                 self.lastSubtrees[i][1] = hash;
             }
 
-            hash = IHasher(hasher).hash(self.lastSubtrees[i]);
+            hash = IHasherT3(hasher).hash(self.lastSubtrees[i]);
             index >>= 1;
 
             unchecked {
@@ -154,13 +151,13 @@ library InternalBinaryIMT {
                     self.lastSubtrees[i][0] = hash;
                 }
 
-                hash = IHasher(hasher).hash([hash, proofSiblings[i]]);
+                hash = IHasherT3(hasher).hash([hash, proofSiblings[i]]);
             } else {
                 if (proofSiblings[i] == self.lastSubtrees[i][0]) {
                     self.lastSubtrees[i][1] = hash;
                 }
 
-                hash = IHasher(hasher).hash([proofSiblings[i], hash]);
+                hash = IHasherT3(hasher).hash([proofSiblings[i], hash]);
             }
 
             unchecked {
@@ -232,9 +229,9 @@ library InternalBinaryIMT {
             }
 
             if (proofPathIndices[i] == 0) {
-                hash = IHasher(hasher).hash([hash, proofSiblings[i]]);
+                hash = IHasherT3(hasher).hash([hash, proofSiblings[i]]);
             } else {
-                hash = IHasher(hasher).hash([proofSiblings[i], hash]);
+                hash = IHasherT3(hasher).hash([proofSiblings[i], hash]);
             }
 
             unchecked {
