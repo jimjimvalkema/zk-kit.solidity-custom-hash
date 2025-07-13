@@ -58,7 +58,10 @@ library InternalBinaryIMT {
 
         self.root = zero;
     }
-
+    /// @dev Use pre calculated default zeros
+    /// @param self: Tree data.
+    /// @param depth: Depth of the tree.
+    /// @param _defaultZero: a function that return the default zeros
     function _initWithDefaultZeroes(
         BinaryIMTData storage self,
         uint256 depth,
@@ -77,12 +80,15 @@ library InternalBinaryIMT {
     /// @dev Inserts a leaf in the tree.
     /// @param self: Tree data.
     /// @param leaf: Leaf to be inserted.
+    /// @param hasher: Address of the contract/library implements the hash function with IHasherT3.
+    /// @param hasherLimit: To check inputs for the hasher to never exceed inputs past this limit (ex the SNARK_SCALAR_FIELD)
+    /// @param _defaultZero: a function that return the default zeros
     function _insert(
         BinaryIMTData storage self,
         uint256 leaf,
         address hasher,
-        function(uint256) pure returns (uint256) _defaultZero,
-        uint256 hasherLimit
+        uint256 hasherLimit,
+        function(uint256) pure returns (uint256) _defaultZero
     ) internal returns (uint256) {
         uint256 depth = self.depth;
 
@@ -122,6 +128,8 @@ library InternalBinaryIMT {
     /// @param newLeaf: New leaf.
     /// @param proofSiblings: Array of the sibling nodes of the proof of membership.
     /// @param proofPathIndices: Path of the proof of membership.
+    /// @param hasher: Address of the contract/library implements the hash function with IHasherT3.
+    /// @param hasherLimit: To check inputs for the hasher to never exceed inputs past this limit (ex the SNARK_SCALAR_FIELD)
     function _update(
         BinaryIMTData storage self,
         uint256 leaf,
@@ -177,19 +185,22 @@ library InternalBinaryIMT {
     /// @param leaf: Leaf to be removed.
     /// @param proofSiblings: Array of the sibling nodes of the proof of membership.
     /// @param proofPathIndices: Path of the proof of membership.
+    /// @param hasher: Address of the contract/library implements the hash function with IHasherT3.
+    /// @param hasherLimit: To check inputs for the hasher to never exceed inputs past this limit (ex the SNARK_SCALAR_FIELD)
+    /// @param defaultZeroLeafs: the zero value for a leaf (same as _defaultZero(0))
     function _remove(
         BinaryIMTData storage self,
         uint256 leaf,
         uint256[] calldata proofSiblings,
         uint8[] calldata proofPathIndices,
         address hasher,
-        uint256 defaultZero,
-        uint256 hasherLimit
+        uint256 hasherLimit,
+        uint256 defaultZeroLeafs
     ) internal {
         _update(
             self,
             leaf,
-            self.useDefaultZeroes ? defaultZero : self.zeroes[0],
+            self.useDefaultZeroes ? defaultZeroLeafs : self.zeroes[0],
             proofSiblings,
             proofPathIndices,
             hasher,
@@ -202,6 +213,8 @@ library InternalBinaryIMT {
     /// @param leaf: Leaf to be removed.
     /// @param proofSiblings: Array of the sibling nodes of the proof of membership.
     /// @param proofPathIndices: Path of the proof of membership.
+    /// @param hasher: Address of the contract/library implements the hash function with IHasherT3.
+    /// @param hasherLimit: To check inputs for the hasher to never exceed inputs past this limit (ex the SNARK_SCALAR_FIELD)
     /// @return True or false.
     function _verify(
         BinaryIMTData storage self,
