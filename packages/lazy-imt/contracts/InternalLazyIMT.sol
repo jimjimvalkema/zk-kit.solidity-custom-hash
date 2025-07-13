@@ -2,15 +2,12 @@
 pragma solidity ^0.8.4;
 
 import {MAX_DEPTH} from "./Constants.sol";
+import {IHasherT3} from "./interfaces/IHasherT3.sol";
 
 struct LazyIMTData {
     uint40 maxIndex;
     uint40 numberOfLeaves;
     mapping(uint256 => uint256) elements;
-}
-
-interface IHasher {
-    function hash(uint[2] memory) external view returns (uint);
 }
 
 library InternalLazyIMT {
@@ -27,7 +24,7 @@ library InternalLazyIMT {
     }
 
     function _indexForElement(uint8 level, uint40 index) internal pure returns (uint40) {
-        // store the elements sparsely
+        // calculate a unique index to store all hashes of the tree sparsely in self.elements
         return MAX_INDEX * level + index;
     }
 
@@ -45,7 +42,7 @@ library InternalLazyIMT {
             // it's a left element so we don't hash until there's a right element
             if (index & 1 == 0) break;
             uint40 elementIndex = _indexForElement(i, index - 1);
-            hash = IHasher(hasher).hash([self.elements[elementIndex], hash]);
+            hash = IHasherT3(hasher).hash([self.elements[elementIndex], hash]);
             unchecked {
                 index >>= 1;
                 i++;
@@ -72,10 +69,10 @@ library InternalLazyIMT {
             if (levelCount <= index >> 1) break;
             if (index & 1 == 0) {
                 uint40 elementIndex = _indexForElement(i, index + 1);
-                hash = IHasher(hasher).hash([hash, self.elements[elementIndex]]);
+                hash = IHasherT3(hasher).hash([hash, self.elements[elementIndex]]);
             } else {
                 uint40 elementIndex = _indexForElement(i, index - 1);
-                hash = IHasher(hasher).hash([self.elements[elementIndex], hash]);
+                hash = IHasherT3(hasher).hash([self.elements[elementIndex], hash]);
             }
             unchecked {
                 index >>= 1;
@@ -150,7 +147,7 @@ library InternalLazyIMT {
 
         for (uint8 i = 0; i < depth; ) {
             if (index & 1 == 0) {
-                levels[i + 1] = IHasher(hasher).hash([levels[i], _defaultZero(i)]);
+                levels[i + 1] = IHasherT3(hasher).hash([levels[i], _defaultZero(i)]);
             } else {
                 uint256 levelCount = (numberOfLeaves) >> (i + 1);
                 if (levelCount > index >> 1) {
@@ -158,7 +155,7 @@ library InternalLazyIMT {
                     levels[i + 1] = parent;
                 } else {
                     uint256 sibling = self.elements[_indexForElement(i, index - 1)];
-                    levels[i + 1] = IHasher(hasher).hash([sibling, levels[i]]);
+                    levels[i + 1] = IHasherT3(hasher).hash([sibling, levels[i]]);
                 }
             }
             unchecked {
