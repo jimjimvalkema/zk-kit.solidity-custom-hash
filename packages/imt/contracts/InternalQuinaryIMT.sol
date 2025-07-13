@@ -31,6 +31,8 @@ library InternalQuinaryIMT {
     /// @param self: Tree data.
     /// @param depth: Depth of the tree.
     /// @param zero: Zero value to be used.
+    /// @param hasher: Address of the contract/library implements the hash function with IHasherT6.
+    /// @param hasherLimit: To check inputs for the hasher to never exceed inputs past this limit (ex the SNARK_SCALAR_FIELD).
     function _init(
         QuinaryIMTData storage self,
         uint256 depth,
@@ -70,6 +72,8 @@ library InternalQuinaryIMT {
     /// @dev Inserts a leaf in the tree.
     /// @param self: Tree data.
     /// @param leaf: Leaf to be inserted.
+    /// @param hasher: Address of the contract/library implements the hash function with IHasherT6.
+    /// @param hasherLimit: To check inputs for the hasher to never exceed inputs past this limit (ex the SNARK_SCALAR_FIELD).
     function _insert(QuinaryIMTData storage self, uint256 leaf, address hasher, uint256 hasherLimit) internal {
         uint256 depth = self.depth;
 
@@ -114,6 +118,8 @@ library InternalQuinaryIMT {
     /// @param newLeaf: New leaf.
     /// @param proofSiblings: Array of the sibling nodes of the proof of membership.
     /// @param proofPathIndices: Path of the proof of membership.
+    /// @param hasher: Address of the contract/library implements the hash function with IHasherT6.
+    /// @param hasherLimit: To check inputs for the hasher to never exceed inputs past this limit (ex the SNARK_SCALAR_FIELD).
     function _update(
         QuinaryIMTData storage self,
         uint256 leaf,
@@ -175,6 +181,8 @@ library InternalQuinaryIMT {
     /// @param leaf: Leaf to be removed.
     /// @param proofSiblings: Array of the sibling nodes of the proof of membership.
     /// @param proofPathIndices: Path of the proof of membership.
+    /// @param hasher: Address of the contract/library implements the hash function with IHasherT6.
+    /// @param hasherLimit: To check inputs for the hasher to never exceed inputs past this limit (ex the SNARK_SCALAR_FIELD).
     function _remove(
         QuinaryIMTData storage self,
         uint256 leaf,
@@ -191,6 +199,8 @@ library InternalQuinaryIMT {
     /// @param leaf: Leaf to be removed.
     /// @param proofSiblings: Array of the sibling nodes of the proof of membership.
     /// @param proofPathIndices: Path of the proof of membership.
+    /// @param hasher: Address of the contract/library implements the hash function with IHasherT6.
+    /// @param hasherLimit: To check inputs for the hasher to never exceed inputs past this limit (ex the SNARK_SCALAR_FIELD).
     /// @return True or false.
     function _verify(
         QuinaryIMTData storage self,

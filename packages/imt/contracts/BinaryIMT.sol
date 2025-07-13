@@ -94,7 +94,7 @@ library BinaryIMT {
     }
 
     function insert(BinaryIMTData storage self, uint256 leaf) public returns (uint256) {
-        return InternalBinaryIMT._insert(self, leaf, hasher, _defaultZero, SNARK_SCALAR_FIELD);
+        return InternalBinaryIMT._insert(self, leaf, hasher, SNARK_SCALAR_FIELD, _defaultZero);
     }
 
     function update(
@@ -119,8 +119,8 @@ library BinaryIMT {
             proofSiblings,
             proofPathIndices,
             hasher,
-            _defaultZero(0),
-            SNARK_SCALAR_FIELD
+            SNARK_SCALAR_FIELD,
+            _defaultZero(0)
         );
     }
 }
