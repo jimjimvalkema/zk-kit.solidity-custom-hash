@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
+import {IHasherT3} from "./interfaces/IHasherT3.sol";
+
 struct LeanIMTData {
     // Tracks the current number of leaves in the tree.
     uint256 size;
@@ -19,10 +21,6 @@ error LeafGreaterThanHasherLimit();
 error LeafCannotBeZero();
 error LeafAlreadyExists();
 error LeafDoesNotExist();
-
-interface IHasher {
-    function hash(uint[2] memory) external view returns (uint);
-}
 
 /// @title Lean Incremental binary Merkle tree.
 /// @dev The LeanIMT is an optimized version of the BinaryIMT.
@@ -70,7 +68,7 @@ library InternalLeanIMT {
 
         for (uint256 level = 0; level < treeDepth; ) {
             if ((index >> level) & 1 == 1) {
-                node = IHasher(hasher).hash([self.sideNodes[level], node]);
+                node = IHasherT3(hasher).hash([self.sideNodes[level], node]);
             } else {
                 self.sideNodes[level] = node;
             }
@@ -153,13 +151,12 @@ library InternalLeanIMT {
             // The number of nodes for the new level that will be created,
             // only the new values, not the entire level.
 
-            // @jimjim: i re-used currentLevelNewNodes so i can delete nextLevelNewNodes so we stay below the stack too deep
-            // but that means we need to cache the sideNode here in case we need it.
-            // because we need to update side nodes before the for loop that modifies it.
-            // But we cant use the new sideNode created while hashing, we need the old one! so we store the old one here!
+            // Store this in memory before we modify self.sideNodes in the lines below.
+            // So we can use the old `self.sideNodes` while hashing,
+            // since the new self.sideNodes should only be used in the next insert.
             uint256 sideNode = self.sideNodes[level];
 
-            // Update the `sideNodes` variable.
+            // Update the `sideNodes` variable here before we modify the array during the loop below!
             // If `currentLevelSize` is odd, the saved value will be the last value of the array
             // if it is even and there are more than 1 element in `currentLevelNewNodes`, the saved value
             // will be the value before the last one.
@@ -171,9 +168,6 @@ library InternalLeanIMT {
                 self.sideNodes[level] = currentLevelNewNodes[currentLevelSize - currentLevelStartIndex - 2];
             }
 
-            // @jimjim: i removed this because adding hasher and hasherLimit was creating a stack to deep error
-            // uint256 numberOfNewNodes = nextLevelSize - nextLevelStartIndex;
-            // uint256[] memory nextLevelNewNodes = new uint256[](nextLevelSize - nextLevelStartIndex);
             for (uint256 i = 0; i < (nextLevelSize - nextLevelStartIndex); ) {
                 uint256 leftNode;
 
@@ -198,7 +192,7 @@ library InternalLeanIMT {
                 // If it has a right child the result will be the hash(leftNode, rightNode) if not,
                 // it will be the leftNode.
                 if (rightNode != 0) {
-                    parentNode = IHasher(hasher).hash([leftNode, rightNode]);
+                    parentNode = IHasherT3(hasher).hash([leftNode, rightNode]);
                 } else {
                     parentNode = leftNode;
                 }
@@ -215,9 +209,6 @@ library InternalLeanIMT {
             // Calculate the next level startIndex value.
             // It is the position of the parent node which is pos/2.
             nextLevelStartIndex >>= 1;
-
-            // Update the next array that will be used to calculate the next level.
-            //currentLevelNewNodes = nextLevelNewNodes;
 
             currentLevelSize = nextLevelSize;
 
@@ -278,8 +269,8 @@ library InternalLeanIMT {
                     revert LeafGreaterThanHasherLimit();
                 }
 
-                node = IHasher(hasher).hash([siblingNodes[i], node]);
-                oldRoot = IHasher(hasher).hash([siblingNodes[i], oldRoot]);
+                node = IHasherT3(hasher).hash([siblingNodes[i], node]);
+                oldRoot = IHasherT3(hasher).hash([siblingNodes[i], oldRoot]);
 
                 unchecked {
                     ++i;
@@ -294,8 +285,8 @@ library InternalLeanIMT {
                         self.sideNodes[level] = node;
                     }
 
-                    node = IHasher(hasher).hash([node, siblingNodes[i]]);
-                    oldRoot = IHasher(hasher).hash([oldRoot, siblingNodes[i]]);
+                    node = IHasherT3(hasher).hash([node, siblingNodes[i]]);
+                    oldRoot = IHasherT3(hasher).hash([oldRoot, siblingNodes[i]]);
 
                     unchecked {
                         ++i;
