@@ -3,11 +3,14 @@ pragma solidity ^0.8.4;
 
 import {InternalLeanIMT, LeanIMTData} from "./InternalLeanIMT.sol";
 import {SNARK_SCALAR_FIELD} from "./Constants.sol";
+import {IHasherT3} from "./interfaces/IHasherT3.sol";
 
 library LeanIMT {
-    address internal constant hasher = 0x3333333C0A88F9BE4fd23ed0536F9B6c427e3B93;
-
     using InternalLeanIMT for *;
+
+    function hasher(uint256[2] memory inputs) internal view returns (uint256) {
+        return IHasherT3(0x3333333C0A88F9BE4fd23ed0536F9B6c427e3B93).hash(inputs);
+    }
 
     function insert(LeanIMTData storage self, uint256 leaf) public returns (uint256) {
         return InternalLeanIMT._insert(self, leaf, hasher, SNARK_SCALAR_FIELD);

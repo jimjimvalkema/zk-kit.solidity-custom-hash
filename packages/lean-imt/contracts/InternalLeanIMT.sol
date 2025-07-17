@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import {IHasherT3} from "./interfaces/IHasherT3.sol";
-
 struct LeanIMTData {
     // Tracks the current number of leaves in the tree.
     uint256 size;
@@ -41,7 +39,7 @@ library InternalLeanIMT {
     function _insert(
         LeanIMTData storage self,
         uint256 leaf,
-        address hasher,
+        function(uint256[2] memory) view returns (uint256) hasher,
         uint256 hasherLimit
     ) internal returns (uint256) {
         if (leaf >= hasherLimit) {
@@ -70,7 +68,7 @@ library InternalLeanIMT {
 
         for (uint256 level = 0; level < treeDepth; ) {
             if ((index >> level) & 1 == 1) {
-                node = IHasherT3(hasher).hash([self.sideNodes[level], node]);
+                node = hasher([self.sideNodes[level], node]);
             } else {
                 self.sideNodes[level] = node;
             }
@@ -99,11 +97,11 @@ library InternalLeanIMT {
     function _insertMany(
         LeanIMTData storage self,
         uint256[] calldata leaves,
-        address hasher,
+        function(uint256[2] memory) view returns (uint256) hasher,
         uint256 hasherLimit
     ) internal returns (uint256) {
         // Cache tree size to optimize gas
-        uint256 treeSize = self.size;
+        // uint256 treeSize = self.size;
 
         // Check that all the new values are correct to be added.
         for (uint256 i = 0; i < leaves.length; ) {
@@ -115,7 +113,7 @@ library InternalLeanIMT {
                 revert LeafAlreadyExists();
             }
 
-            self.leaves[leaves[i]] = treeSize + 1 + i;
+            self.leaves[leaves[i]] = self.size + 1 + i;
 
             unchecked {
                 ++i;
@@ -128,22 +126,22 @@ library InternalLeanIMT {
         currentLevelNewNodes = leaves;
 
         // Cache tree depth to optimize gas
-        uint256 treeDepth = self.depth;
+        // uint256 treeDepth = self.depth;
 
         // Calculate the depth of the tree after adding the new values.
         // Unlike the 'insert' function, we need a while here as
         // N insertions can increase the tree's depth more than once.
-        while (2 ** treeDepth < treeSize + leaves.length) {
-            ++treeDepth;
+        while (2 ** self.depth < self.size + leaves.length) {
+            ++self.depth;
         }
 
-        self.depth = treeDepth;
+        //self.depth = treeDepth;
 
         // First index to change in every level.
-        uint256 currentLevelStartIndex = treeSize;
+        uint256 currentLevelStartIndex = self.size;
 
         // Size of the level used to create the next level.
-        uint256 currentLevelSize = treeSize + leaves.length;
+        uint256 currentLevelSize = self.size + leaves.length;
 
         // The index where changes begin at the next level.
         uint256 nextLevelStartIndex = currentLevelStartIndex >> 1;
@@ -151,7 +149,7 @@ library InternalLeanIMT {
         // The size of the next level.
         uint256 nextLevelSize = ((currentLevelSize - 1) >> 1) + 1;
 
-        for (uint256 level = 0; level < treeDepth; ) {
+        for (uint256 level = 0; level < self.depth; ) {
             // The number of nodes for the new level that will be created,
             // only the new values, not the entire level.
 
@@ -196,7 +194,7 @@ library InternalLeanIMT {
                 // If it has a right child the result will be the hash(leftNode, rightNode) if not,
                 // it will be the leftNode.
                 if (rightNode != 0) {
-                    parentNode = IHasherT3(hasher).hash([leftNode, rightNode]);
+                    parentNode = hasher([leftNode, rightNode]);
                 } else {
                     parentNode = leftNode;
                 }
@@ -226,10 +224,10 @@ library InternalLeanIMT {
         }
 
         // Update tree size
-        self.size = treeSize + leaves.length;
+        self.size = self.size + leaves.length;
 
         // Update tree root
-        self.sideNodes[treeDepth] = currentLevelNewNodes[0];
+        self.sideNodes[self.depth] = currentLevelNewNodes[0];
 
         return currentLevelNewNodes[0];
     }
@@ -248,7 +246,7 @@ library InternalLeanIMT {
         uint256 oldLeaf,
         uint256 newLeaf,
         uint256[] calldata siblingNodes,
-        address hasher,
+        function(uint256[2] memory) view returns (uint256) hasher,
         uint256 hasherLimit
     ) internal returns (uint256) {
         if (newLeaf >= hasherLimit) {
@@ -275,8 +273,8 @@ library InternalLeanIMT {
                     revert LeafGreaterThanHasherLimit();
                 }
 
-                node = IHasherT3(hasher).hash([siblingNodes[i], node]);
-                oldRoot = IHasherT3(hasher).hash([siblingNodes[i], oldRoot]);
+                node = hasher([siblingNodes[i], node]);
+                oldRoot = hasher([siblingNodes[i], oldRoot]);
 
                 unchecked {
                     ++i;
@@ -291,8 +289,8 @@ library InternalLeanIMT {
                         self.sideNodes[level] = node;
                     }
 
-                    node = IHasherT3(hasher).hash([node, siblingNodes[i]]);
-                    oldRoot = IHasherT3(hasher).hash([oldRoot, siblingNodes[i]]);
+                    node = hasher([node, siblingNodes[i]]);
+                    oldRoot = hasher([oldRoot, siblingNodes[i]]);
 
                     unchecked {
                         ++i;
@@ -335,7 +333,7 @@ library InternalLeanIMT {
         LeanIMTData storage self,
         uint256 oldLeaf,
         uint256[] calldata siblingNodes,
-        address hasher,
+        function(uint256[2] memory) view returns (uint256) hasher,
         uint256 hasherLimit
     ) internal returns (uint256) {
         return _update(self, oldLeaf, 0, siblingNodes, hasher, hasherLimit);
