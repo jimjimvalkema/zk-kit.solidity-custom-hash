@@ -8,7 +8,7 @@ library BinaryIMT {
     using InternalBinaryIMT for *;
 
     // This is poseidonT3 from: https://github.com/chancehudson/poseidon-solidity
-    address internal constant hasher = 0x3333333C0A88F9BE4fd23ed0536F9B6c427e3B93;
+    address internal constant HASHER_ADDRESS = 0x3333333C0A88F9BE4fd23ed0536F9B6c427e3B93;
 
     uint256 internal constant Z_0 = 0;
     uint256 internal constant Z_1 = 14744269619966411208579211824598458697587494354926760081771325075741142829156;
@@ -86,7 +86,7 @@ library BinaryIMT {
     }
 
     function init(BinaryIMTData storage self, uint256 depth, uint256 zero) public {
-        InternalBinaryIMT._init(self, depth, zero, hasher, SNARK_SCALAR_FIELD);
+        InternalBinaryIMT._init(self, depth, zero, HASHER_ADDRESS, SNARK_SCALAR_FIELD);
     }
 
     function initWithDefaultZeroes(BinaryIMTData storage self, uint256 depth) public {
@@ -94,7 +94,7 @@ library BinaryIMT {
     }
 
     function insert(BinaryIMTData storage self, uint256 leaf) public returns (uint256) {
-        return InternalBinaryIMT._insert(self, leaf, hasher, SNARK_SCALAR_FIELD, _defaultZero);
+        return InternalBinaryIMT._insert(self, leaf, HASHER_ADDRESS, SNARK_SCALAR_FIELD, _defaultZero);
     }
 
     function update(
@@ -104,7 +104,15 @@ library BinaryIMT {
         uint256[] calldata proofSiblings,
         uint8[] calldata proofPathIndices
     ) public {
-        InternalBinaryIMT._update(self, leaf, newLeaf, proofSiblings, proofPathIndices, hasher, SNARK_SCALAR_FIELD);
+        InternalBinaryIMT._update(
+            self,
+            leaf,
+            newLeaf,
+            proofSiblings,
+            proofPathIndices,
+            HASHER_ADDRESS,
+            SNARK_SCALAR_FIELD
+        );
     }
 
     function remove(
@@ -118,7 +126,7 @@ library BinaryIMT {
             leaf,
             proofSiblings,
             proofPathIndices,
-            hasher,
+            HASHER_ADDRESS,
             SNARK_SCALAR_FIELD,
             _defaultZero(0)
         );
