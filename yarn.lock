@@ -1406,6 +1406,38 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@zk-kit-solidity-custom-hash/imt.sol@workspace:packages/imt/contracts":
+  version: 0.0.0-use.local
+  resolution: "@zk-kit-solidity-custom-hash/imt.sol@workspace:packages/imt/contracts"
+  dependencies:
+    poseidon-solidity: "npm:0.0.5"
+  languageName: unknown
+  linkType: soft
+
+"@zk-kit-solidity-custom-hash/lazy-imt.sol@workspace:packages/lazy-imt/contracts":
+  version: 0.0.0-use.local
+  resolution: "@zk-kit-solidity-custom-hash/lazy-imt.sol@workspace:packages/lazy-imt/contracts"
+  dependencies:
+    poseidon-solidity: "npm:0.0.5"
+  languageName: unknown
+  linkType: soft
+
+"@zk-kit-solidity-custom-hash/lazytower.sol@workspace:packages/lazytower/contracts":
+  version: 0.0.0-use.local
+  resolution: "@zk-kit-solidity-custom-hash/lazytower.sol@workspace:packages/lazytower/contracts"
+  dependencies:
+    poseidon-solidity: "npm:0.0.5"
+  languageName: unknown
+  linkType: soft
+
+"@zk-kit-solidity-custom-hash/lean-imt.sol@workspace:packages/lean-imt/contracts":
+  version: 0.0.0-use.local
+  resolution: "@zk-kit-solidity-custom-hash/lean-imt.sol@workspace:packages/lean-imt/contracts"
+  dependencies:
+    poseidon-solidity: "npm:0.0.5"
+  languageName: unknown
+  linkType: soft
+
 "@zk-kit/excubiae@workspace:packages/excubiae/contracts":
   version: 0.0.0-use.local
   resolution: "@zk-kit/excubiae@workspace:packages/excubiae/contracts"
@@ -1413,14 +1445,6 @@ __metadata:
     "@ethereum-attestation-service/eas-contracts": "npm:1.7.1"
     "@openzeppelin/contracts": "npm:5.0.2"
     "@semaphore-protocol/contracts": "npm:4.0.0-beta.16"
-  languageName: unknown
-  linkType: soft
-
-"@zk-kit/imt.sol@workspace:packages/imt/contracts":
-  version: 0.0.0-use.local
-  resolution: "@zk-kit/imt.sol@workspace:packages/imt/contracts"
-  dependencies:
-    poseidon-solidity: "npm:0.0.5"
   languageName: unknown
   linkType: soft
 
@@ -1433,22 +1457,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@zk-kit/lazy-imt.sol@workspace:packages/lazy-imt/contracts":
-  version: 0.0.0-use.local
-  resolution: "@zk-kit/lazy-imt.sol@workspace:packages/lazy-imt/contracts"
-  dependencies:
-    poseidon-solidity: "npm:0.0.5"
-  languageName: unknown
-  linkType: soft
-
-"@zk-kit/lazytower.sol@workspace:packages/lazytower/contracts":
-  version: 0.0.0-use.local
-  resolution: "@zk-kit/lazytower.sol@workspace:packages/lazytower/contracts"
-  dependencies:
-    poseidon-solidity: "npm:0.0.5"
-  languageName: unknown
-  linkType: soft
-
 "@zk-kit/lean-imt.sol@npm:2.0.0":
   version: 2.0.0
   resolution: "@zk-kit/lean-imt.sol@npm:2.0.0"
@@ -1457,14 +1465,6 @@ __metadata:
   checksum: 10/094a1788905c380ed5c767184938d3aa0d0b3ba8ad92e8d6efae1243e4d15103484ec1224163ae7d0c43e0095ae19f28e41a7877d37398ff60dcadbf1eb27a77
   languageName: node
   linkType: hard
-
-"@zk-kit/lean-imt.sol@workspace:packages/lean-imt/contracts":
-  version: 0.0.0-use.local
-  resolution: "@zk-kit/lean-imt.sol@workspace:packages/lean-imt/contracts"
-  dependencies:
-    poseidon-solidity: "npm:0.0.5"
-  languageName: unknown
-  linkType: soft
 
 "@zk-kit/lean-imt@npm:^2.0.1":
   version: 2.0.1

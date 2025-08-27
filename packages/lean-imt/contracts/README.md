@@ -12,11 +12,11 @@
     <a href="https://github.com/privacy-scaling-explorations/zk-kit.solidity/tree/main/packages/imt.sol/contracts/LICENSE">
         <img alt="NPM license" src="https://img.shields.io/npm/l/%40zk-kit%2Flean-imt.sol?style=flat-square">
     </a>
-    <a href="https://www.npmjs.com/package/@zk-kit/lean-imt.sol">
-        <img alt="NPM version" src="https://img.shields.io/npm/v/@zk-kit/lean-imt.sol?style=flat-square" />
+    <a href="https://www.npmjs.com/package/@zk-kit-solidity-custom-hash/solidity-custom-hash/lean-imt.sol">
+        <img alt="NPM version" src="https://img.shields.io/npm/v/@zk-kit-solidity-custom-hash/solidity-custom-hash/lean-imt.sol?style=flat-square" />
     </a>
-    <a href="https://npmjs.org/package/@zk-kit/lean-imt.sol">
-        <img alt="Downloads" src="https://img.shields.io/npm/dm/@zk-kit/lean-imt.sol.svg?style=flat-square" />
+    <a href="https://npmjs.org/package/@zk-kit-solidity-custom-hash/solidity-custom-hash/lean-imt.sol">
+        <img alt="Downloads" src="https://img.shields.io/npm/dm/@zk-kit-solidity-custom-hash/solidity-custom-hash/lean-imt.sol.svg?style=flat-square" />
     </a>
     <a href="https://prettier.io/">
         <img alt="Code style prettier" src="https://img.shields.io/badge/code%20style-prettier-f8bc45?style=flat-square&logo=prettier" />
@@ -42,16 +42,16 @@ The LeanIMT is an optimized binary version of the [IMT](https://github.com/priva
 
 ### npm or yarn
 
-Install the `@zk-kit/lean-imt.sol` package with npm:
+Install the `@zk-kit-solidity-custom-hash/solidity-custom-hash/lean-imt.sol` package with npm:
 
 ```bash
-npm i @zk-kit/lean-imt.sol --save
+npm i @zk-kit-solidity-custom-hash/solidity-custom-hash/lean-imt.sol --save
 ```
 
 or yarn:
 
 ```bash
-yarn add @zk-kit/lean-imt.sol
+yarn add @zk-kit-solidity-custom-hash/solidity-custom-hash/lean-imt.sol
 ```
 
 ## 📜 Usage
