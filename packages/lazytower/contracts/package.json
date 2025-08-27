@@ -1,5 +1,5 @@
 {
-    "name": "@zk-kit-solidity-custom-hash/lazytower-sol",
+    "name": "@zk-kit-solidity/lazytower-sol",
     "version": "0.0.1",
     "description": "LazyTower Solidity libraries.",
     "license": "MIT",
