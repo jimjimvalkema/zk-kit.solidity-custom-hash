@@ -42,16 +42,16 @@ The LeanIMT is an optimized binary version of the [IMT](https://github.com/priva
 
 ### npm or yarn
 
-Install the `@zk-kit-solidity-custom-hash/solidity-custom-hash/lean-imt.sol` package with npm:
+Install the `@zk-kit-solidity-custom-hash/solidity-custom-hash/lean-imt` package with npm:
 
 ```bash
-npm i @zk-kit-solidity-custom-hash/solidity-custom-hash/lean-imt.sol --save
+npm i @zk-kit-solidity-custom-hash/solidity-custom-hash/lean-imt --save
 ```
 
 or yarn:
 
 ```bash
-yarn add @zk-kit-solidity-custom-hash/solidity-custom-hash/lean-imt.sol
+yarn add @zk-kit-solidity-custom-hash/solidity-custom-hash/lean-imt
 ```
 
 ## 📜 Usage

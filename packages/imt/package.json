@@ -1,5 +1,5 @@
 {
-    "name": "imt-sol",
+    "name": "imt",
     "private": true,
     "scripts": {
         "start": "hardhat node",

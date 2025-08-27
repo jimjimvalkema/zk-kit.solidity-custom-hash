@@ -12,11 +12,11 @@
     <a href="https://github.com/privacy-scaling-explorations/zk-kit.solidity/tree/main/packages/lazytower.sol/LICENSE">
         <img alt="NPM license" src="https://img.shields.io/npm/l/%40zk-kit%2Flazytower.sol?style=flat-square">
     </a>
-    <a href="https://www.npmjs.com/package/@zk-kit-solidity-custom-hashh/solidity-custom-hash/lazytower.sol">
-        <img alt="NPM version" src="https://img.shields.io/npm/v/@zk-kit-solidity-custom-hashh/solidity-custom-hash/lazytower.sol?style=flat-square" />
+    <a href="https://www.npmjs.com/package/@zk-kit-solidity-custom-hash/solidity-custom-hash/lazytower.sol">
+        <img alt="NPM version" src="https://img.shields.io/npm/v/@zk-kit-solidity-custom-hash/solidity-custom-hash/lazytower.sol?style=flat-square" />
     </a>
-    <a href="https://npmjs.org/package/@zk-kit-solidity-custom-hashh/solidity-custom-hash/lazytower.sol">
-        <img alt="Downloads" src="https://img.shields.io/npm/dm/@zk-kit-solidity-custom-hashh/solidity-custom-hash/lazytower.sol.svg?style=flat-square" />
+    <a href="https://npmjs.org/package/@zk-kit-solidity-custom-hash/solidity-custom-hash/lazytower.sol">
+        <img alt="Downloads" src="https://img.shields.io/npm/dm/@zk-kit-solidity-custom-hash/solidity-custom-hash/lazytower.sol.svg?style=flat-square" />
     </a>
     <a href="https://prettier.io/">
         <img alt="Code style prettier" src="https://img.shields.io/badge/code%20style-prettier-f8bc45?style=flat-square&logo=prettier" />
@@ -40,16 +40,16 @@
 
 ### npm or yarn
 
-Install the `@zk-kit-solidity-custom-hashh/solidity-custom-hash/lazytower.sol` package with npm:
+Install the `@zk-kit-solidity-custom-hash/solidity-custom-hash/lazytower-sol` package with npm:
 
 ```bash
-npm i @zk-kit-solidity-custom-hashh/solidity-custom-hash/lazytower.sol --save
+npm i @zk-kit-solidity-custom-hash/solidity-custom-hash/lazytower-sol --save
 ```
 
 or yarn:
 
 ```bash
-yarn add @zk-kit-solidity-custom-hashh/solidity-custom-hash/lazytower.sol
+yarn add @zk-kit-solidity-custom-hash/solidity-custom-hash/lazytower-sol
 ```
 
 ## 📜 Usage

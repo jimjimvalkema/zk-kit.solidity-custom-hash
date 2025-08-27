@@ -1406,33 +1406,33 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@zk-kit-solidity-custom-hash/imt.sol@workspace:packages/imt/contracts":
+"@zk-kit-solidity-custom-hash/imt@workspace:packages/imt/contracts":
   version: 0.0.0-use.local
-  resolution: "@zk-kit-solidity-custom-hash/imt.sol@workspace:packages/imt/contracts"
+  resolution: "@zk-kit-solidity-custom-hash/imt@workspace:packages/imt/contracts"
   dependencies:
     poseidon-solidity: "npm:0.0.5"
   languageName: unknown
   linkType: soft
 
-"@zk-kit-solidity-custom-hash/lazy-imt.sol@workspace:packages/lazy-imt/contracts":
+"@zk-kit-solidity-custom-hash/lazy-imt@workspace:packages/lazy-imt/contracts":
   version: 0.0.0-use.local
-  resolution: "@zk-kit-solidity-custom-hash/lazy-imt.sol@workspace:packages/lazy-imt/contracts"
+  resolution: "@zk-kit-solidity-custom-hash/lazy-imt@workspace:packages/lazy-imt/contracts"
   dependencies:
     poseidon-solidity: "npm:0.0.5"
   languageName: unknown
   linkType: soft
 
-"@zk-kit-solidity-custom-hash/lazytower.sol@workspace:packages/lazytower/contracts":
+"@zk-kit-solidity-custom-hash/lazytower-sol@workspace:packages/lazytower/contracts":
   version: 0.0.0-use.local
-  resolution: "@zk-kit-solidity-custom-hash/lazytower.sol@workspace:packages/lazytower/contracts"
+  resolution: "@zk-kit-solidity-custom-hash/lazytower-sol@workspace:packages/lazytower/contracts"
   dependencies:
     poseidon-solidity: "npm:0.0.5"
   languageName: unknown
   linkType: soft
 
-"@zk-kit-solidity-custom-hash/lean-imt.sol@workspace:packages/lean-imt/contracts":
+"@zk-kit-solidity-custom-hash/lean-imt@workspace:packages/lean-imt/contracts":
   version: 0.0.0-use.local
-  resolution: "@zk-kit-solidity-custom-hash/lean-imt.sol@workspace:packages/lean-imt/contracts"
+  resolution: "@zk-kit-solidity-custom-hash/lean-imt@workspace:packages/lean-imt/contracts"
   dependencies:
     poseidon-solidity: "npm:0.0.5"
   languageName: unknown
@@ -4087,9 +4087,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"imt-sol@workspace:packages/imt":
+"imt@workspace:packages/imt":
   version: 0.0.0-use.local
-  resolution: "imt-sol@workspace:packages/imt"
+  resolution: "imt@workspace:packages/imt"
   dependencies:
     "@nomicfoundation/hardhat-chai-matchers": "npm:^2.0.3"
     "@nomicfoundation/hardhat-ethers": "npm:^3.0.0"
@@ -4555,9 +4555,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lazy-imt-sol@workspace:packages/lazy-imt":
+"lazy-imt@workspace:packages/lazy-imt":
   version: 0.0.0-use.local
-  resolution: "lazy-imt-sol@workspace:packages/lazy-imt"
+  resolution: "lazy-imt@workspace:packages/lazy-imt"
   dependencies:
     "@nomicfoundation/hardhat-chai-matchers": "npm:^2.0.3"
     "@nomicfoundation/hardhat-ethers": "npm:^3.0.0"
@@ -4616,9 +4616,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"lean-imt-sol@workspace:packages/lean-imt":
+"lean-imt@workspace:packages/lean-imt":
   version: 0.0.0-use.local
-  resolution: "lean-imt-sol@workspace:packages/lean-imt"
+  resolution: "lean-imt@workspace:packages/lean-imt"
   dependencies:
     "@nomicfoundation/hardhat-chai-matchers": "npm:^2.0.3"
     "@nomicfoundation/hardhat-ethers": "npm:^3.0.0"

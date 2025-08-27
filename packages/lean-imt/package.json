@@ -1,5 +1,5 @@
 {
-    "name": "lean-imt-sol",
+    "name": "lean-imt",
     "private": true,
     "scripts": {
         "start": "hardhat node",

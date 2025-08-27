@@ -1,5 +1,5 @@
 {
-    "name": "lazy-imt-sol",
+    "name": "lazy-imt",
     "private": true,
     "scripts": {
         "start": "hardhat node",

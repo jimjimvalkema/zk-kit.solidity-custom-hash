@@ -71,7 +71,7 @@
         <tr>
             <td>
                 <a href="https://github.com/privacy-scaling-explorations/zk-kit.solidity/tree/main/packages/imt">
-                    @zk-kit/imt.sol
+                    @zk-kit/imt
                 </a>
             </td>
             <td>
@@ -93,7 +93,7 @@
         <tr>
             <td>
                 <a href="https://github.com/privacy-scaling-explorations/zk-kit.solidity/tree/main/packages/lean-imt">
-                    @zk-kit/lean-imt.sol
+                    @zk-kit/lean-imt
                 </a>
             </td>
             <td>
@@ -117,7 +117,7 @@
         <tr>
             <td>
                 <a href="https://github.com/privacy-scaling-explorations/zk-kit.solidity/tree/main/packages/lazy-imt">
-                    @zk-kit/lazy-imt.sol
+                    @zk-kit/lazy-imt
                 </a>
             </td>
             <td>
@@ -247,7 +247,7 @@ yarn compile
 
 ```bash
 yarn version:bump <package-name> <version>
-# e.g. yarn version:bump imt.sol 2.0.0
+# e.g. yarn version:bump imt 2.0.0
 ```
 
 This step creates a commit and a git tag.
@@ -262,7 +262,7 @@ git push origin main
 
 ```bash
 git push origin <package-name>-<version>
-# e.g. git push origin imt.sol-v2.0.0
+# e.g. git push origin imt-v2.0.0
 ```
 
 After pushing the new git tag, a workflow will be triggered and will publish the package on [npm](https://www.npmjs.com/) and release a new version on Github with its changelogs automatically.

@@ -43,16 +43,16 @@
 
 ### npm or yarn
 
-Install the `@zk-kit-solidity-custom-hash/solidity-custom-hash/lazy-imt.sol` package with npm:
+Install the `@zk-kit-solidity-custom-hash/solidity-custom-hash/lazy-imt` package with npm:
 
 ```bash
-npm i @zk-kit-solidity-custom-hash/solidity-custom-hash/lazy-imt.sol --save
+npm i @zk-kit-solidity-custom-hash/solidity-custom-hash/lazy-imt --save
 ```
 
 or yarn:
 
 ```bash
-yarn add @zk-kit-solidity-custom-hash/solidity-custom-hash/lazy-imt.sol
+yarn add @zk-kit-solidity-custom-hash/solidity-custom-hash/lazy-imt
 ```
 
 ## 📜 Usage
