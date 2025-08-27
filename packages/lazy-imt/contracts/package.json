@@ -1,6 +1,6 @@
 {
     "name": "zk-kit-lazy-imt-custom-hash",
-    "version": "2.0.1",
+    "version": "2.0.4",
     "description": "Lazy Incremental Merkle tree implementation in Solidity.",
     "license": "MIT",
     "files": [
