@@ -1,10 +1,10 @@
 {
-    "name": "zk-kit.solidity",
-    "description": "A monorepo of reusable contracts for zero-knowledge technologies.",
+    "name": "zk-kit-solidity-custom-hash",
+    "description": "A monorepo of reusable contracts for zero-knowledge technologies. Created by zk-kit, modified to support custom hash functions in its merkle trees",
     "license": "MIT",
-    "repository": "git@github.com:privacy-scaling-explorations/zk-kit.solidity.git",
-    "homepage": "https://github.com/privacy-scaling-explorations/zk-kit.solidity",
-    "bugs": "https://github.com/privacy-scaling-explorations/zk-kit.solidity/issues",
+    "repository": "git@github.com:jimjimvalkema/zk-kit.solidity-custom-hash.git",
+    "homepage": "https://github.com/jimjimvalkema/zk-kit.solidity-custom-hash/tree/published-package",
+    "bugs": "https://github.com/jimjimvalkema/zk-kit.solidity-custom-hash/tree/published-package/issues",
     "private": true,
     "scripts": {
         "compile": "yarn workspaces foreach -Ap run compile",
