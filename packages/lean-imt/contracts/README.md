@@ -10,13 +10,13 @@
         <img src="https://img.shields.io/badge/project-zk--kit-blue.svg?style=flat-square">
     </a>
     <a href="https://github.com/privacy-scaling-explorations/zk-kit.solidity/tree/main/packages/imt.sol/contracts/LICENSE">
-        <img alt="NPM license" src="https://img.shields.io/npm/l/%40zk-kit%2Flean-imt.sol?style=flat-square">
+        <img alt="NPM license" src="https://img.shields.io/npm/l/%40zk-kit%2Flean-imt?style=flat-square">
     </a>
-    <a href="https://www.npmjs.com/package/@zk-kit-solidity-custom-hash/solidity-custom-hash/lean-imt.sol">
-        <img alt="NPM version" src="https://img.shields.io/npm/v/@zk-kit-solidity-custom-hash/solidity-custom-hash/lean-imt.sol?style=flat-square" />
+    <a href="https://www.npmjs.com/package/@zk-kit-solidity-custom-hash/solidity-custom-hash/lean-imt">
+        <img alt="NPM version" src="https://img.shields.io/npm/v/@zk-kit-solidity-custom-hash/solidity-custom-hash/lean-imt?style=flat-square" />
     </a>
-    <a href="https://npmjs.org/package/@zk-kit-solidity-custom-hash/solidity-custom-hash/lean-imt.sol">
-        <img alt="Downloads" src="https://img.shields.io/npm/dm/@zk-kit-solidity-custom-hash/solidity-custom-hash/lean-imt.sol.svg?style=flat-square" />
+    <a href="https://npmjs.org/package/@zk-kit-solidity-custom-hash/solidity-custom-hash/lean-imt">
+        <img alt="Downloads" src="https://img.shields.io/npm/dm/@zk-kit-solidity-custom-hash/solidity-custom-hash/lean-imt.svg?style=flat-square" />
     </a>
     <a href="https://prettier.io/">
         <img alt="Code style prettier" src="https://img.shields.io/badge/code%20style-prettier-f8bc45?style=flat-square&logo=prettier" />

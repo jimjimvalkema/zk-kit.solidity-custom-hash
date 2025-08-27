@@ -252,16 +252,23 @@ yarn version:bump <package-name> <version>
 
 This step creates a commit and a git tag.
 
-2. Push the changes to main:
+<!-- 2. Push the changes to main:
 
 ```bash
 git push origin main
-```
+``` -->
 
+<!--
+i dont wanna
 3. Push the new git tag:
 
 ```bash
 git push origin <package-name>-<version>
+# e.g. git push origin imt-v2.0.0
+``` -->
+
+```bash
+yarn version:publish <package-name>-<version>
 # e.g. git push origin imt-v2.0.0
 ```
 
