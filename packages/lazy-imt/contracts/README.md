@@ -12,11 +12,11 @@
     <a href="https://github.com/privacy-scaling-explorations/zk-kit.solidity/tree/main/packages/imt.sol/contracts/LICENSE">
         <img alt="NPM license" src="https://img.shields.io/npm/l/%40zk-kit%2Flazy-imt.sol?style=flat-square">
     </a>
-    <a href="https://www.npmjs.com/package/@zk-kit-solidity-custom-hash/solidity-custom-hash/lazy-imt.sol">
-        <img alt="NPM version" src="https://img.shields.io/npm/v/@zk-kit-solidity-custom-hash/solidity-custom-hash/lazy-imt.sol?style=flat-square" />
+    <a href="https://www.npmjs.com/package/zk-kit-lazy-imt-custom-hash.sol">
+        <img alt="NPM version" src="https://img.shields.io/npm/v/zk-kit-lazy-imt-custom-hash.sol?style=flat-square" />
     </a>
-    <a href="https://npmjs.org/package/@zk-kit-solidity-custom-hash/solidity-custom-hash/lazy-imt.sol">
-        <img alt="Downloads" src="https://img.shields.io/npm/dm/@zk-kit-solidity-custom-hash/solidity-custom-hash/lazy-imt.sol.svg?style=flat-square" />
+    <a href="https://npmjs.org/package/zk-kit-lazy-imt-custom-hash.sol">
+        <img alt="Downloads" src="https://img.shields.io/npm/dm/zk-kit-lazy-imt-custom-hash.sol.svg?style=flat-square" />
     </a>
     <a href="https://prettier.io/">
         <img alt="Code style prettier" src="https://img.shields.io/badge/code%20style-prettier-f8bc45?style=flat-square&logo=prettier" />
@@ -43,16 +43,16 @@
 
 ### npm or yarn
 
-Install the `@zk-kit-solidity-custom-hash/solidity-custom-hash/lazy-imt` package with npm:
+Install the `zk-kit-lazy-imt-custom-hash` package with npm:
 
 ```bash
-npm i @zk-kit-solidity-custom-hash/solidity-custom-hash/lazy-imt --save
+npm i zk-kit-lazy-imt-custom-hash --save
 ```
 
 or yarn:
 
 ```bash
-yarn add @zk-kit-solidity-custom-hash/solidity-custom-hash/lazy-imt
+yarn add zk-kit-lazy-imt-custom-hash
 ```
 
 ## 📜 Usage
