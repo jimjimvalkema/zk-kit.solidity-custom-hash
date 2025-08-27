@@ -1,6 +1,0 @@
-undecided:
-  - "@zk-kit/excubiae"
-  - zk-kit-imt-custom-hash
-  - zk-kit-lazy-imt-custom-hash
-  - "@zk-kit-solidity/lazytower-sol"
-  - zk-kit-lean-imt-custom-hash
