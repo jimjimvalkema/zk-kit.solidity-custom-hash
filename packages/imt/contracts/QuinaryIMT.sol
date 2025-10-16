@@ -6,14 +6,14 @@ import {SNARK_SCALAR_FIELD} from "./Constants.sol";
 
 library QuinaryIMT {
     using InternalQuinaryIMT for *;
-    address internal constant hasher = 0x666333F371685334CdD69bdDdaFBABc87CE7c7Db;
+    address internal constant HASHER_ADDRESS = 0x666333F371685334CdD69bdDdaFBABc87CE7c7Db;
 
     function init(QuinaryIMTData storage self, uint256 depth, uint256 zero) public {
-        InternalQuinaryIMT._init(self, depth, zero, hasher, SNARK_SCALAR_FIELD);
+        InternalQuinaryIMT._init(self, depth, zero, HASHER_ADDRESS, SNARK_SCALAR_FIELD);
     }
 
     function insert(QuinaryIMTData storage self, uint256 leaf) public {
-        InternalQuinaryIMT._insert(self, leaf, hasher, SNARK_SCALAR_FIELD);
+        InternalQuinaryIMT._insert(self, leaf, HASHER_ADDRESS, SNARK_SCALAR_FIELD);
     }
 
     function update(
@@ -23,7 +23,15 @@ library QuinaryIMT {
         uint256[4][] calldata proofSiblings,
         uint8[] calldata proofPathIndices
     ) public {
-        InternalQuinaryIMT._update(self, leaf, newLeaf, proofSiblings, proofPathIndices, hasher, SNARK_SCALAR_FIELD);
+        InternalQuinaryIMT._update(
+            self,
+            leaf,
+            newLeaf,
+            proofSiblings,
+            proofPathIndices,
+            HASHER_ADDRESS,
+            SNARK_SCALAR_FIELD
+        );
     }
 
     function remove(
@@ -32,7 +40,7 @@ library QuinaryIMT {
         uint256[4][] calldata proofSiblings,
         uint8[] calldata proofPathIndices
     ) public {
-        InternalQuinaryIMT._remove(self, leaf, proofSiblings, proofPathIndices, hasher, SNARK_SCALAR_FIELD);
+        InternalQuinaryIMT._remove(self, leaf, proofSiblings, proofPathIndices, HASHER_ADDRESS, SNARK_SCALAR_FIELD);
     }
 
     function verify(
@@ -41,6 +49,7 @@ library QuinaryIMT {
         uint256[4][] calldata proofSiblings,
         uint8[] calldata proofPathIndices
     ) private view returns (bool) {
-        return InternalQuinaryIMT._verify(self, leaf, proofSiblings, proofPathIndices, hasher, SNARK_SCALAR_FIELD);
+        return
+            InternalQuinaryIMT._verify(self, leaf, proofSiblings, proofPathIndices, HASHER_ADDRESS, SNARK_SCALAR_FIELD);
     }
 }
