@@ -7,7 +7,7 @@ import {SNARK_SCALAR_FIELD} from "./Constants.sol";
 library LazyIMT {
     using InternalLazyIMT for *;
 
-    address internal constant hasher = 0x3333333C0A88F9BE4fd23ed0536F9B6c427e3B93;
+    address internal constant HASHER_ADDRESS = 0x3333333C0A88F9BE4fd23ed0536F9B6c427e3B93;
 
     uint256 internal constant Z_0 = 0;
     uint256 internal constant Z_1 = 14744269619966411208579211824598458697587494354926760081771325075741142829156;
@@ -97,19 +97,19 @@ library LazyIMT {
     }
 
     function insert(LazyIMTData storage self, uint256 leaf) public {
-        InternalLazyIMT._insert(self, leaf, hasher, SNARK_SCALAR_FIELD);
+        InternalLazyIMT._insert(self, leaf, HASHER_ADDRESS, SNARK_SCALAR_FIELD);
     }
 
     function update(LazyIMTData storage self, uint256 leaf, uint40 index) public {
-        InternalLazyIMT._update(self, leaf, index, hasher, SNARK_SCALAR_FIELD);
+        InternalLazyIMT._update(self, leaf, index, HASHER_ADDRESS, SNARK_SCALAR_FIELD);
     }
 
     function root(LazyIMTData storage self) public view returns (uint256) {
-        return InternalLazyIMT._root(self, hasher, _defaultZero);
+        return InternalLazyIMT._root(self, HASHER_ADDRESS, _defaultZero);
     }
 
     function root(LazyIMTData storage self, uint8 depth) public view returns (uint256) {
-        return InternalLazyIMT._root(self, depth, hasher, _defaultZero);
+        return InternalLazyIMT._root(self, depth, HASHER_ADDRESS, _defaultZero);
     }
 
     function merkleProofElements(
@@ -117,10 +117,10 @@ library LazyIMT {
         uint40 index,
         uint8 depth
     ) public view returns (uint256[] memory) {
-        return InternalLazyIMT._merkleProofElements(self, index, depth, hasher, _defaultZero);
+        return InternalLazyIMT._merkleProofElements(self, index, depth, HASHER_ADDRESS, _defaultZero);
     }
 
     function _root(LazyIMTData storage self, uint40 numberOfLeaves, uint8 depth) internal view returns (uint256) {
-        return InternalLazyIMT._root(self, numberOfLeaves, depth, hasher, _defaultZero);
+        return InternalLazyIMT._root(self, numberOfLeaves, depth, HASHER_ADDRESS, _defaultZero);
     }
 }

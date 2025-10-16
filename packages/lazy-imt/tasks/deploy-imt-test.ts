@@ -3,7 +3,7 @@ import poseidonSolidity from "poseidon-solidity"
 import { proxy } from "poseidon-solidity"
 import { ethers } from "ethers"
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers"
-import { IHasher__factory, LazyIMT__factory } from "../typechain-types"
+import { LazyIMT__factory } from "../typechain-types"
 
 // based of: https://github.com/chancehudson/poseidon-solidity?tab=readme-ov-file#deploy
 export async function deployPoseidon(
@@ -51,13 +51,10 @@ task("deploy:imt-test", "Deploy an IMT contract for testing a library")
             console.info(`PoseidonT${arity + 1} library has been deployed to: ${poseidonAddress}`)
         }
 
-        const LibraryFactory = await ethers.getContractFactory(libraryName, {
-            // libraries: {
-            //     [`PoseidonT${arity + 1}`]: poseidonAddress
-            // }
-        })
+        const LibraryFactory = (await ethers.getContractFactory(libraryName, {
+            libraries: {}
+        })) as LazyIMT__factory
 
-        //@ts-ignore TODO IHasher is messing with typescript here
         const library = await LibraryFactory.deploy()
         const libraryAddress = await library.getAddress()
 
@@ -77,6 +74,5 @@ task("deploy:imt-test", "Deploy an IMT contract for testing a library")
         if (logs) {
             console.info(`${libraryName}Test contract has been deployed to: ${contractAddress}`)
         }
-
         return { library, contract }
     })
