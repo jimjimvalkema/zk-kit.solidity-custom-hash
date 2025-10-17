@@ -3,12 +3,20 @@ pragma solidity ^0.8.4;
 
 import {InternalLazyIMT, LazyIMTData} from "./InternalLazyIMT.sol";
 import {SNARK_SCALAR_FIELD} from "./Constants.sol";
+import {IHasherT3} from "./interfaces/IHasherT3.sol";
 
 library LazyIMT {
     using InternalLazyIMT for *;
 
+    // The create2 address of poseidonT3 from: https://github.com/chancehudson/poseidon-solidity?tab=readme-ov-file#benchmark
     address internal constant HASHER_ADDRESS = 0x3333333C0A88F9BE4fd23ed0536F9B6c427e3B93;
 
+    // The function used for hashing. Passed as a function parameter in functions from InternalLazyIMT
+    function _hasher(uint256 left, uint256 right) internal view returns (uint256) {
+        return IHasherT3(HASHER_ADDRESS).hash([left, right]);
+    }
+
+    // The pre-generated default values of a poseidon merkle tree with all zero leafs
     uint256 internal constant Z_0 = 0;
     uint256 internal constant Z_1 = 14744269619966411208579211824598458697587494354926760081771325075741142829156;
     uint256 internal constant Z_2 = 7423237065226347324353380772367382631490014989348495481811164164159255474657;
@@ -43,6 +51,8 @@ library LazyIMT {
     uint256 internal constant Z_31 = 12549363297364877722388257367377629555213421373705596078299904496781819142130;
     uint256 internal constant Z_32 = 21443572485391568159800782191812935835534334817699172242223315142338162256601;
 
+    // The function to retrieve the default values of every level of an empty tree.
+    // Passed as a function parameter in functions from InternalLazyIMT
     function _defaultZero(uint8 index) internal pure returns (uint256) {
         if (index == 0) return Z_0;
         if (index == 1) return Z_1;
@@ -97,19 +107,19 @@ library LazyIMT {
     }
 
     function insert(LazyIMTData storage self, uint256 leaf) public {
-        InternalLazyIMT._insert(self, leaf, HASHER_ADDRESS, SNARK_SCALAR_FIELD);
+        InternalLazyIMT._insert(self, leaf, _hasher, SNARK_SCALAR_FIELD);
     }
 
     function update(LazyIMTData storage self, uint256 leaf, uint40 index) public {
-        InternalLazyIMT._update(self, leaf, index, HASHER_ADDRESS, SNARK_SCALAR_FIELD);
+        InternalLazyIMT._update(self, leaf, index, _hasher, SNARK_SCALAR_FIELD);
     }
 
     function root(LazyIMTData storage self) public view returns (uint256) {
-        return InternalLazyIMT._root(self, HASHER_ADDRESS, _defaultZero);
+        return InternalLazyIMT._root(self, _hasher, _defaultZero);
     }
 
     function root(LazyIMTData storage self, uint8 depth) public view returns (uint256) {
-        return InternalLazyIMT._root(self, depth, HASHER_ADDRESS, _defaultZero);
+        return InternalLazyIMT._root(self, depth, _hasher, _defaultZero);
     }
 
     function merkleProofElements(
@@ -117,10 +127,10 @@ library LazyIMT {
         uint40 index,
         uint8 depth
     ) public view returns (uint256[] memory) {
-        return InternalLazyIMT._merkleProofElements(self, index, depth, HASHER_ADDRESS, _defaultZero);
+        return InternalLazyIMT._merkleProofElements(self, index, depth, _hasher, _defaultZero);
     }
 
     function _root(LazyIMTData storage self, uint40 numberOfLeaves, uint8 depth) internal view returns (uint256) {
-        return InternalLazyIMT._root(self, numberOfLeaves, depth, HASHER_ADDRESS, _defaultZero);
+        return InternalLazyIMT._root(self, numberOfLeaves, depth, _hasher, _defaultZero);
     }
 }
