@@ -102,10 +102,14 @@ describe("LeanIMT", () => {
 
             jsLeanIMT.insertMany(elems)
             await leanIMTTest.insertMany(elems)
+            // regular insert is added to test if self.sideNodes is correct
+            jsLeanIMT.insert(420n)
+            await leanIMTTest.insert(420n)
 
             const root = await leanIMTTest.root()
             expect(root).to.equal(jsLeanIMT.root)
         })
+
         it("Should insert many leaves when the tree is not empty", async () => {
             jsLeanIMT.insert(BigInt(1))
 

@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import {IHasherT3} from "./interfaces/IHasherT3.sol";
-
 struct LeanIMTData {
     // Tracks the current number of leaves in the tree.
     uint256 size;
@@ -14,6 +12,13 @@ struct LeanIMTData {
     // A mapping from leaf values to their respective indices in the tree.
     // This facilitates checks for leaf existence and retrieval of leaf positions.
     mapping(uint256 => uint256) leaves;
+}
+
+// packing these inputs in a structs saves space on the stack
+// it adds some gas but without it _insertMany went over the stack limit
+struct Hasher {
+    function(uint256[2] memory) view returns (uint256) func;
+    uint256 limit;
 }
 
 error WrongSiblingNodes();
@@ -35,16 +40,10 @@ library InternalLeanIMT {
     /// constraints of the tree and then updates the tree's structure accordingly.
     /// @param self: A storage reference to the 'LeanIMTData' struct.
     /// @param leaf: The value of the new leaf to be inserted into the tree.
-    /// @param hasher: Address of the contract/library implements the hash function with IHasherT3.
-    /// @param hasherLimit: To check inputs for the hasher to never exceed inputs past this limit (ex the SNARK_SCALAR_FIELD)
+    /// @param hasher: A struct that contains the function used for hashing and it's limit (ex the SNARK_SCALAR_FIELD limit in poseidon)
     /// @return The new hash of the node after the leaf has been inserted.
-    function _insert(
-        LeanIMTData storage self,
-        uint256 leaf,
-        address hasher,
-        uint256 hasherLimit
-    ) internal returns (uint256) {
-        if (leaf >= hasherLimit) {
+    function _insert(LeanIMTData storage self, uint256 leaf, Hasher memory hasher) internal returns (uint256) {
+        if (leaf >= hasher.limit) {
             revert LeafGreaterThanHasherLimit();
         } else if (leaf == 0) {
             revert LeafCannotBeZero();
@@ -70,7 +69,7 @@ library InternalLeanIMT {
 
         for (uint256 level = 0; level < treeDepth; ) {
             if ((index >> level) & 1 == 1) {
-                node = IHasherT3(hasher).hash([self.sideNodes[level], node]);
+                node = hasher.func([self.sideNodes[level], node]);
             } else {
                 self.sideNodes[level] = node;
             }
@@ -93,21 +92,19 @@ library InternalLeanIMT {
     /// constraints of the tree and then updates the tree's structure accordingly.
     /// @param self: A storage reference to the 'LeanIMTData' struct.
     /// @param leaves: The values of the new leaves to be inserted into the tree.
-    /// @param hasher: Address of the contract/library implements the hash function with IHasherT3.
-    /// @param hasherLimit: To check inputs for the hasher to never exceed inputs past this limit (ex the SNARK_SCALAR_FIELD)
+    /// @param hasher: A struct that contains the function used for hashing and it's limit (ex the SNARK_SCALAR_FIELD limit in poseidon)
     /// @return The root after the leaves have been inserted.
     function _insertMany(
         LeanIMTData storage self,
         uint256[] calldata leaves,
-        address hasher,
-        uint256 hasherLimit
+        Hasher memory hasher
     ) internal returns (uint256) {
         // Cache tree size to optimize gas
         uint256 treeSize = self.size;
 
         // Check that all the new values are correct to be added.
         for (uint256 i = 0; i < leaves.length; ) {
-            if (leaves[i] >= hasherLimit) {
+            if (leaves[i] >= hasher.limit) {
                 revert LeafGreaterThanHasherLimit();
             } else if (leaves[i] == 0) {
                 revert LeafCannotBeZero();
@@ -154,40 +151,21 @@ library InternalLeanIMT {
         for (uint256 level = 0; level < treeDepth; ) {
             // The number of nodes for the new level that will be created,
             // only the new values, not the entire level.
-
-            // Store this in memory before we modify self.sideNodes in the lines below.
-            // So we can use the old `self.sideNodes` while hashing,
-            // since the new self.sideNodes should only be used in the next insert.
-            uint256 sideNode = self.sideNodes[level];
-
-            // Update the `sideNodes` variable here before we modify the array during the loop below!
-            // If `currentLevelSize` is odd, the saved value will be the last value of the array
-            // if it is even and there are more than 1 element in `currentLevelNewNodes`, the saved value
-            // will be the value before the last one.
-            // If it is even and there is only one element, there is no need to save anything because
-            // the correct value for this level was already saved before.
-            if (currentLevelSize & 1 == 1) {
-                self.sideNodes[level] = currentLevelNewNodes[currentLevelSize - currentLevelStartIndex - 1];
-            } else if (currentLevelNewNodes.length > 1) {
-                self.sideNodes[level] = currentLevelNewNodes[currentLevelSize - currentLevelStartIndex - 2];
-            }
-
+            uint256[] memory nextLevelNewNodes = new uint256[](nextLevelSize - nextLevelStartIndex);
             for (uint256 i = 0; i < (nextLevelSize - nextLevelStartIndex); ) {
-                uint256 leftNode;
+                // packing left and right node in one array saves on the stack size
+                uint256[2] memory hasherInput;
 
                 // Assign the left node using the saved path or the position in the array.
-                if (i == 0 && (nextLevelStartIndex * 2 < currentLevelStartIndex)) {
-                    //leftNode = self.sideNodes[level];
-                    leftNode = sideNode;
+                if ((i + nextLevelStartIndex) * 2 < currentLevelStartIndex) {
+                    hasherInput[0] = self.sideNodes[level];
                 } else {
-                    leftNode = currentLevelNewNodes[(i + nextLevelStartIndex) * 2 - currentLevelStartIndex];
+                    hasherInput[0] = currentLevelNewNodes[(i + nextLevelStartIndex) * 2 - currentLevelStartIndex];
                 }
-
-                uint256 rightNode;
 
                 // Assign the right node if the value exists.
                 if ((i + nextLevelStartIndex) * 2 + 1 < currentLevelSize) {
-                    rightNode = currentLevelNewNodes[(i + nextLevelStartIndex) * 2 + 1 - currentLevelStartIndex];
+                    hasherInput[1] = currentLevelNewNodes[(i + nextLevelStartIndex) * 2 + 1 - currentLevelStartIndex];
                 }
 
                 uint256 parentNode;
@@ -195,17 +173,29 @@ library InternalLeanIMT {
                 // Assign the parent node.
                 // If it has a right child the result will be the hash(leftNode, rightNode) if not,
                 // it will be the leftNode.
-                if (rightNode != 0) {
-                    parentNode = IHasherT3(hasher).hash([leftNode, rightNode]);
+                if (hasherInput[1] != 0) {
+                    parentNode = hasher.func(hasherInput);
                 } else {
-                    parentNode = leftNode;
+                    parentNode = hasherInput[0];
                 }
 
-                currentLevelNewNodes[i] = parentNode;
+                nextLevelNewNodes[i] = parentNode;
 
                 unchecked {
                     ++i;
                 }
+            }
+
+            // Update the `sideNodes` variable.
+            // If `currentLevelSize` is odd, the saved value will be the last value of the array
+            // if it is even and there are more than 1 element in `currentLevelNewNodes`, the saved value
+            // will be the value before the last one.
+            // If it is even and there is only one element, there is no need to save anything because
+            // the correct value for this level was already saved before.
+            if (currentLevelSize & 1 == 1) {
+                self.sideNodes[level] = currentLevelNewNodes[currentLevelNewNodes.length - 1];
+            } else if (currentLevelNewNodes.length > 1) {
+                self.sideNodes[level] = currentLevelNewNodes[currentLevelNewNodes.length - 2];
             }
 
             currentLevelStartIndex = nextLevelStartIndex;
@@ -213,6 +203,9 @@ library InternalLeanIMT {
             // Calculate the next level startIndex value.
             // It is the position of the parent node which is pos/2.
             nextLevelStartIndex >>= 1;
+
+            // Update the next array that will be used to calculate the next level.
+            currentLevelNewNodes = nextLevelNewNodes;
 
             currentLevelSize = nextLevelSize;
 
@@ -240,18 +233,16 @@ library InternalLeanIMT {
     /// @param oldLeaf: The value of the leaf that is to be updated.
     /// @param newLeaf: The new value that will replace the oldLeaf in the tree.
     /// @param siblingNodes: An array of sibling nodes that are necessary to recalculate the path to the root.
-    /// @param hasher: Address of the contract/library implements the hash function with IHasherT3.
-    /// @param hasherLimit: To check inputs for the hasher to never exceed inputs past this limit (ex the SNARK_SCALAR_FIELD)
+    /// @param hasher: A struct that contains the function used for hashing and it's limit (ex the SNARK_SCALAR_FIELD limit in poseidon)
     /// @return The new hash of the updated node after the leaf has been updated.
     function _update(
         LeanIMTData storage self,
         uint256 oldLeaf,
         uint256 newLeaf,
         uint256[] calldata siblingNodes,
-        address hasher,
-        uint256 hasherLimit
+        Hasher memory hasher
     ) internal returns (uint256) {
-        if (newLeaf >= hasherLimit) {
+        if (newLeaf >= hasher.limit) {
             revert LeafGreaterThanHasherLimit();
         } else if (!_has(self, oldLeaf)) {
             revert LeafDoesNotExist();
@@ -271,19 +262,19 @@ library InternalLeanIMT {
 
         for (uint256 level = 0; level < treeDepth; ) {
             if ((index >> level) & 1 == 1) {
-                if (siblingNodes[i] >= hasherLimit) {
+                if (siblingNodes[i] >= hasher.limit) {
                     revert LeafGreaterThanHasherLimit();
                 }
 
-                node = IHasherT3(hasher).hash([siblingNodes[i], node]);
-                oldRoot = IHasherT3(hasher).hash([siblingNodes[i], oldRoot]);
+                node = hasher.func([siblingNodes[i], node]);
+                oldRoot = hasher.func([siblingNodes[i], oldRoot]);
 
                 unchecked {
                     ++i;
                 }
             } else {
                 if (index >> level != lastIndex >> level) {
-                    if (siblingNodes[i] >= hasherLimit) {
+                    if (siblingNodes[i] >= hasher.limit) {
                         revert LeafGreaterThanHasherLimit();
                     }
 
@@ -291,8 +282,8 @@ library InternalLeanIMT {
                         self.sideNodes[level] = node;
                     }
 
-                    node = IHasherT3(hasher).hash([node, siblingNodes[i]]);
-                    oldRoot = IHasherT3(hasher).hash([oldRoot, siblingNodes[i]]);
+                    node = hasher.func([node, siblingNodes[i]]);
+                    oldRoot = hasher.func([oldRoot, siblingNodes[i]]);
 
                     unchecked {
                         ++i;
@@ -328,17 +319,15 @@ library InternalLeanIMT {
     /// @param self: A storage reference to the 'LeanIMTData' struct.
     /// @param oldLeaf: The value of the leaf to be removed.
     /// @param siblingNodes: An array of sibling nodes required for updating the path to the root after removal.
-    /// @param hasher: Address of the contract/library implements the hash function with IHasherT3.
-    /// @param hasherLimit: To check inputs for the hasher to never exceed inputs past this limit (ex the SNARK_SCALAR_FIELD)
+    /// @param hasher: A struct that contains the function used for hashing and it's limit (ex the SNARK_SCALAR_FIELD limit in poseidon)
     /// @return The new root hash of the tree after the leaf has been removed.
     function _remove(
         LeanIMTData storage self,
         uint256 oldLeaf,
         uint256[] calldata siblingNodes,
-        address hasher,
-        uint256 hasherLimit
+        Hasher memory hasher
     ) internal returns (uint256) {
-        return _update(self, oldLeaf, 0, siblingNodes, hasher, hasherLimit);
+        return _update(self, oldLeaf, 0, siblingNodes, hasher);
     }
 
     /// @dev Checks if a leaf exists in the tree.
