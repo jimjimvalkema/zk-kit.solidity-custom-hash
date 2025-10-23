@@ -1,6 +1,6 @@
 {
     "name": "zk-kit-imt-custom-hash",
-    "version": "2.0.4",
+    "version": "2.1.1",
     "description": "Incremental Merkle tree implementation in Solidity.",
     "license": "MIT",
     "files": [
