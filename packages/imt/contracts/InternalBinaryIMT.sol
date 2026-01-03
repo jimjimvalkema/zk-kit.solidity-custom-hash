@@ -2,7 +2,6 @@
 pragma solidity ^0.8.4;
 
 import {MAX_DEPTH} from "./Constants.sol";
-import {IHasherT3} from "./interfaces/IHasherT3.sol";
 
 // Each incremental tree has certain properties and data that will
 // be used to add new leaves.
@@ -36,7 +35,7 @@ library InternalBinaryIMT {
         BinaryIMTData storage self,
         uint256 depth,
         uint256 zero,
-        address hasher,
+        function(uint256[2] memory) view returns (uint256) hasher,
         uint256 hasherLimit
     ) internal {
         if (zero >= hasherLimit) {
@@ -49,7 +48,7 @@ library InternalBinaryIMT {
 
         for (uint8 i = 0; i < depth; ) {
             self.zeroes[i] = zero;
-            zero = IHasherT3(hasher).hash([zero, zero]);
+            zero = hasher([zero, zero]);
 
             unchecked {
                 ++i;
@@ -86,7 +85,7 @@ library InternalBinaryIMT {
     function _insert(
         BinaryIMTData storage self,
         uint256 leaf,
-        address hasher,
+        function(uint256[2] memory) view returns (uint256) hasher,
         uint256 hasherLimit,
         function(uint256) pure returns (uint256) _defaultZero
     ) internal returns (uint256) {
@@ -109,7 +108,7 @@ library InternalBinaryIMT {
                 self.lastSubtrees[i][1] = hash;
             }
 
-            hash = IHasherT3(hasher).hash(self.lastSubtrees[i]);
+            hash = hasher(self.lastSubtrees[i]);
             index >>= 1;
 
             unchecked {
@@ -136,7 +135,7 @@ library InternalBinaryIMT {
         uint256 newLeaf,
         uint256[] calldata proofSiblings,
         uint8[] calldata proofPathIndices,
-        address hasher,
+        function(uint256[2] memory) view returns (uint256) hasher,
         uint256 hasherLimit
     ) internal {
         if (newLeaf == leaf) {
@@ -159,13 +158,13 @@ library InternalBinaryIMT {
                     self.lastSubtrees[i][0] = hash;
                 }
 
-                hash = IHasherT3(hasher).hash([hash, proofSiblings[i]]);
+                hash = hasher([hash, proofSiblings[i]]);
             } else {
                 if (proofSiblings[i] == self.lastSubtrees[i][0]) {
                     self.lastSubtrees[i][1] = hash;
                 }
 
-                hash = IHasherT3(hasher).hash([proofSiblings[i], hash]);
+                hash = hasher([proofSiblings[i], hash]);
             }
 
             unchecked {
@@ -193,7 +192,7 @@ library InternalBinaryIMT {
         uint256 leaf,
         uint256[] calldata proofSiblings,
         uint8[] calldata proofPathIndices,
-        address hasher,
+        function(uint256[2] memory) view returns (uint256) hasher,
         uint256 hasherLimit,
         uint256 defaultZeroLeafs
     ) internal {
@@ -221,7 +220,7 @@ library InternalBinaryIMT {
         uint256 leaf,
         uint256[] calldata proofSiblings,
         uint8[] calldata proofPathIndices,
-        address hasher,
+        function(uint256[2] memory) view returns (uint256) hasher,
         uint256 hasherLimit
     ) internal view returns (bool) {
         uint256 depth = self.depth;
@@ -242,9 +241,9 @@ library InternalBinaryIMT {
             }
 
             if (proofPathIndices[i] == 0) {
-                hash = IHasherT3(hasher).hash([hash, proofSiblings[i]]);
+                hash = hasher([hash, proofSiblings[i]]);
             } else {
-                hash = IHasherT3(hasher).hash([proofSiblings[i], hash]);
+                hash = hasher([proofSiblings[i], hash]);
             }
 
             unchecked {

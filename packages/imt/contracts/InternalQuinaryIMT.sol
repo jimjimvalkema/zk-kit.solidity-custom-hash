@@ -2,7 +2,6 @@
 pragma solidity ^0.8.4;
 
 import {MAX_DEPTH} from "./Constants.sol";
-import {IHasherT6} from "./interfaces/IHasherT6.sol";
 
 // Each incremental tree has certain properties and data that will
 // be used to add new leaves.
@@ -31,13 +30,13 @@ library InternalQuinaryIMT {
     /// @param self: Tree data.
     /// @param depth: Depth of the tree.
     /// @param zero: Zero value to be used.
-    /// @param hasher: Address of the contract/library implements the hash function with IHasherT6.
+    /// @param hasher: Address of the contract/library implements the hash function with hasher.
     /// @param hasherLimit: To check inputs for the hasher to never exceed inputs past this limit (ex the SNARK_SCALAR_FIELD).
     function _init(
         QuinaryIMTData storage self,
         uint256 depth,
         uint256 zero,
-        address hasher,
+        function(uint256[5] memory) view returns (uint256) hasher,
         uint256 hasherLimit
     ) internal {
         if (zero >= hasherLimit) {
@@ -59,7 +58,7 @@ library InternalQuinaryIMT {
                 }
             }
 
-            zero = IHasherT6(hasher).hash(zeroChildren);
+            zero = hasher(zeroChildren);
 
             unchecked {
                 ++i;
@@ -72,9 +71,14 @@ library InternalQuinaryIMT {
     /// @dev Inserts a leaf in the tree.
     /// @param self: Tree data.
     /// @param leaf: Leaf to be inserted.
-    /// @param hasher: Address of the contract/library implements the hash function with IHasherT6.
+    /// @param hasher: Address of the contract/library implements the hash function with hasher.
     /// @param hasherLimit: To check inputs for the hasher to never exceed inputs past this limit (ex the SNARK_SCALAR_FIELD).
-    function _insert(QuinaryIMTData storage self, uint256 leaf, address hasher, uint256 hasherLimit) internal {
+    function _insert(
+        QuinaryIMTData storage self,
+        uint256 leaf,
+        function(uint256[5] memory) view returns (uint256) hasher,
+        uint256 hasherLimit
+    ) internal {
         uint256 depth = self.depth;
 
         if (leaf >= hasherLimit) {
@@ -100,7 +104,7 @@ library InternalQuinaryIMT {
                 }
             }
 
-            hash = IHasherT6(hasher).hash(self.lastSubtrees[i]);
+            hash = hasher(self.lastSubtrees[i]);
             index /= 5;
 
             unchecked {
@@ -118,7 +122,7 @@ library InternalQuinaryIMT {
     /// @param newLeaf: New leaf.
     /// @param proofSiblings: Array of the sibling nodes of the proof of membership.
     /// @param proofPathIndices: Path of the proof of membership.
-    /// @param hasher: Address of the contract/library implements the hash function with IHasherT6.
+    /// @param hasher: Address of the contract/library implements the hash function with hasher.
     /// @param hasherLimit: To check inputs for the hasher to never exceed inputs past this limit (ex the SNARK_SCALAR_FIELD).
     function _update(
         QuinaryIMTData storage self,
@@ -126,7 +130,7 @@ library InternalQuinaryIMT {
         uint256 newLeaf,
         uint256[4][] calldata proofSiblings,
         uint8[] calldata proofPathIndices,
-        address hasher,
+        function(uint256[5] memory) view returns (uint256) hasher,
         uint256 hasherLimit
     ) internal {
         if (newLeaf == leaf) {
@@ -162,7 +166,7 @@ library InternalQuinaryIMT {
                 self.lastSubtrees[i][proofPathIndices[i]] = hash;
             }
 
-            hash = IHasherT6(hasher).hash(nodes);
+            hash = hasher(nodes);
 
             unchecked {
                 ++i;
@@ -181,14 +185,14 @@ library InternalQuinaryIMT {
     /// @param leaf: Leaf to be removed.
     /// @param proofSiblings: Array of the sibling nodes of the proof of membership.
     /// @param proofPathIndices: Path of the proof of membership.
-    /// @param hasher: Address of the contract/library implements the hash function with IHasherT6.
+    /// @param hasher: Address of the contract/library implements the hash function with hasher.
     /// @param hasherLimit: To check inputs for the hasher to never exceed inputs past this limit (ex the SNARK_SCALAR_FIELD).
     function _remove(
         QuinaryIMTData storage self,
         uint256 leaf,
         uint256[4][] calldata proofSiblings,
         uint8[] calldata proofPathIndices,
-        address hasher,
+        function(uint256[5] memory) view returns (uint256) hasher,
         uint256 hasherLimit
     ) internal {
         _update(self, leaf, self.zeroes[0], proofSiblings, proofPathIndices, hasher, hasherLimit);
@@ -199,7 +203,7 @@ library InternalQuinaryIMT {
     /// @param leaf: Leaf to be removed.
     /// @param proofSiblings: Array of the sibling nodes of the proof of membership.
     /// @param proofPathIndices: Path of the proof of membership.
-    /// @param hasher: Address of the contract/library implements the hash function with IHasherT6.
+    /// @param hasher: Address of the contract/library implements the hash function with hasher.
     /// @param hasherLimit: To check inputs for the hasher to never exceed inputs past this limit (ex the SNARK_SCALAR_FIELD).
     /// @return True or false.
     function _verify(
@@ -207,7 +211,7 @@ library InternalQuinaryIMT {
         uint256 leaf,
         uint256[4][] calldata proofSiblings,
         uint8[] calldata proofPathIndices,
-        address hasher,
+        function(uint256[5] memory) view returns (uint256) hasher,
         uint256 hasherLimit
     ) internal view returns (bool) {
         uint256 depth = self.depth;
@@ -245,7 +249,7 @@ library InternalQuinaryIMT {
                 }
             }
 
-            hash = IHasherT6(hasher).hash(nodes);
+            hash = hasher(nodes);
 
             unchecked {
                 ++i;
