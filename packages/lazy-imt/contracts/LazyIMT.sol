@@ -12,8 +12,8 @@ library LazyIMT {
     address internal constant HASHER_ADDRESS = 0x3333333C0A88F9BE4fd23ed0536F9B6c427e3B93;
 
     // The function used for hashing. Passed as a function parameter in functions from InternalLazyIMT
-    function _hasher(uint256 left, uint256 right) internal view returns (uint256) {
-        return IHasherT3(HASHER_ADDRESS).hash([left, right]);
+    function _hasher(uint256[2] memory input) internal view returns (uint256) {
+        return IHasherT3(HASHER_ADDRESS).hash(input);
     }
 
     // The pre-generated default values of a poseidon merkle tree with all zero leafs

@@ -30,7 +30,7 @@ library InternalLazyIMT {
     function _insert(
         LazyIMTData storage self,
         uint256 leaf,
-        function(uint256, uint256) view returns (uint256) hasher,
+        function(uint256[2] memory) view returns (uint256) hasher,
         uint256 hasherLimit
     ) internal {
         uint40 index = self.numberOfLeaves;
@@ -46,7 +46,7 @@ library InternalLazyIMT {
             // it's a left element so we don't hash until there's a right element
             if (index & 1 == 0) break;
             uint40 elementIndex = _indexForElement(i, index - 1);
-            hash = hasher(self.elements[elementIndex], hash);
+            hash = hasher([self.elements[elementIndex], hash]);
             unchecked {
                 index >>= 1;
                 i++;
@@ -58,7 +58,7 @@ library InternalLazyIMT {
         LazyIMTData storage self,
         uint256 leaf,
         uint40 index,
-        function(uint256, uint256) view returns (uint256) hasher,
+        function(uint256[2] memory) view returns (uint256) hasher,
         uint256 hasherLimit
     ) internal {
         require(leaf < hasherLimit, "LazyIMT: leaf must be < hasherLimit");
@@ -73,10 +73,10 @@ library InternalLazyIMT {
             if (levelCount <= index >> 1) break;
             if (index & 1 == 0) {
                 uint40 elementIndex = _indexForElement(i, index + 1);
-                hash = hasher(hash, self.elements[elementIndex]);
+                hash = hasher([hash, self.elements[elementIndex]]);
             } else {
                 uint40 elementIndex = _indexForElement(i, index - 1);
-                hash = hasher(self.elements[elementIndex], hash);
+                hash = hasher([self.elements[elementIndex], hash]);
             }
             unchecked {
                 index >>= 1;
@@ -87,7 +87,7 @@ library InternalLazyIMT {
 
     function _root(
         LazyIMTData storage self,
-        function(uint256, uint256) view returns (uint256) hasher,
+        function(uint256[2] memory) view returns (uint256) hasher,
         function(uint8) pure returns (uint256) _defaultZero
     ) internal view returns (uint256) {
         // this will always short circuit if self.numberOfLeaves == 0
@@ -103,7 +103,7 @@ library InternalLazyIMT {
     function _root(
         LazyIMTData storage self,
         uint8 depth,
-        function(uint256, uint256) view returns (uint256) hasher,
+        function(uint256[2] memory) view returns (uint256) hasher,
         function(uint8) pure returns (uint256) _defaultZero
     ) internal view returns (uint256) {
         require(depth > 0, "LazyIMT: depth must be > 0");
@@ -119,7 +119,7 @@ library InternalLazyIMT {
         LazyIMTData storage self,
         uint40 numberOfLeaves,
         uint8 depth,
-        function(uint256, uint256) view returns (uint256) hasher,
+        function(uint256[2] memory) view returns (uint256) hasher,
         function(uint8) pure returns (uint256) _defaultZero
     ) internal view returns (uint256) {
         require(depth <= MAX_DEPTH, "LazyIMT: depth must be <= MAX_DEPTH");
@@ -135,7 +135,7 @@ library InternalLazyIMT {
         uint40 numberOfLeaves,
         uint8 depth,
         uint256[] memory levels,
-        function(uint256, uint256) view returns (uint256) hasher,
+        function(uint256[2] memory) view returns (uint256) hasher,
         function(uint8) pure returns (uint256) _defaultZero
     ) internal view {
         require(depth <= MAX_DEPTH, "LazyIMT: depth must be <= MAX_DEPTH");
@@ -151,7 +151,7 @@ library InternalLazyIMT {
 
         for (uint8 i = 0; i < depth; ) {
             if (index & 1 == 0) {
-                levels[i + 1] = hasher(levels[i], _defaultZero(i));
+                levels[i + 1] = hasher([levels[i], _defaultZero(i)]);
             } else {
                 uint256 levelCount = (numberOfLeaves) >> (i + 1);
                 if (levelCount > index >> 1) {
@@ -159,7 +159,7 @@ library InternalLazyIMT {
                     levels[i + 1] = parent;
                 } else {
                     uint256 sibling = self.elements[_indexForElement(i, index - 1)];
-                    levels[i + 1] = hasher(sibling, levels[i]);
+                    levels[i + 1] = hasher([sibling, levels[i]]);
                 }
             }
             unchecked {
@@ -173,7 +173,7 @@ library InternalLazyIMT {
         LazyIMTData storage self,
         uint40 index,
         uint8 depth,
-        function(uint256, uint256) view returns (uint256) hasher,
+        function(uint256[2] memory) view returns (uint256) hasher,
         function(uint8) pure returns (uint256) _defaultZero
     ) internal view returns (uint256[] memory) {
         uint40 numberOfLeaves = self.numberOfLeaves;
