@@ -3,7 +3,7 @@ import poseidonSolidity from "poseidon-solidity"
 import { proxy } from "poseidon-solidity"
 import { ethers } from "ethers"
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers"
-import { LazyIMT__factory, LazyIMTTest__factory } from "../typechain-types"
+import { LazyIMT__factory } from "../typechain-types"
 
 // based of: https://github.com/chancehudson/poseidon-solidity?tab=readme-ov-file#deploy
 export async function deployPoseidon(
@@ -74,6 +74,5 @@ task("deploy:imt-test", "Deploy an IMT contract for testing a library")
         if (logs) {
             console.info(`${libraryName}Test contract has been deployed to: ${contractAddress}`)
         }
-
         return { library, contract }
     })
